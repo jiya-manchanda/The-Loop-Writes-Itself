@@ -83,67 +83,7 @@ You can use the pipeline to:
 * Feed those masks into a ControlNet-conditioned diffusion model to render Escher-style frames.
 * Optionally train your own model on synthetic data.
 
-All scripts live in `src/`. Example input/output lives in `examples/`.
-
----
-
-## Quickstart
-
-1. **Set up the environment**
-
-   With conda:
-
-   ```bash
-   conda env create -f environment.yml
-   conda activate shape-morph-diffusion
-or with pip:
-python -m venv .venv
-source .venv/bin/activate  # on Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-Prepare input shapes
-Put your start and end drawings (PNG or JPG) into data/raw/:
-
-data/raw/start.png
-data/raw/end.png
-Extract masks
-python src/mask_extract.py data/raw/start.png data/masks/start_mask.png
-python src/mask_extract.py data/raw/end.png   data/masks/end_mask.png
-Generate intermediate masks
-from PIL import Image
-import numpy as np
-from src.warp_interpolate import make_interpolated_masks
-
-start_mask = np.array(Image.open("data/masks/start_mask.png"))
-end_mask   = np.array(Image.open("data/masks/end_mask.png"))
-masks = make_interpolated_masks(start_mask, end_mask, n_frames=30)
-
-# Save to disk
-from src.utils import save_image
-for i, m in enumerate(masks):
-    save_image(m, f"examples/frames/mask_{i:03d}.png")
-Render Escher-style frames
-from src.prototype_controlnet import run_controlnet_sequence
-run_controlnet_sequence(
-    mask_images=[f"examples/frames/mask_{i:03d}.png" for i in range(30)],
-    prompt="Escher style tessellation morph, colored pencil drawing",
-    out_dir="examples/frames"
-)
-Make a GIF or video
-ffmpeg -y -framerate 10 -i examples/frames/frame_%03d.png -vf "scale=1024:-1:flags=lanczos" -loop 0 out.gif
-Generate Synthetic Training Data
-You can generate random shape-pairs and morph sequences to build your own training set:
-python src/synth_dataset.py --out_dir data/synthetic --num_pairs 500
-This will create subfolders with start.png, end.png and intermediate masks for each pair. You can point the training script to this directory.
-Train a Model (experimental)
-A skeleton training script is provided in src/train_diffusion.py. It uses diffusers to fine-tune a conditional UNet on your synthetic data.
-Example:
-
-python src/train_diffusion.py \
-    --data_dir data/synthetic \
-    --output_dir checkpoints/my_metamorph_model \
-    --epochs 5 \
-    --batch_size 4
-After training, point prototype_controlnet.py at your fine-tuned model instead of the default runwayml/stable-diffusion-v1-5.
+All scripts live in `src/`.
 
 ## License
 
