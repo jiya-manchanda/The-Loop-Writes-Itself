@@ -1,0 +1,3584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Loop Writes Itself</title>
+    <!-- model-viewer for interactive .glb on the web -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Didot', 'Bodoni MT', 'Playfair Display', serif;
+            background: #f5f1e8;
+            color: #3d3226;
+            overflow-x: hidden;
+            cursor: default;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        .landing {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at 30% 50%, #f9f6f0 0%, #ebe3d5 100%);
+            position: relative;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            padding: 2vh 2rem;
+            overflow: hidden;
+            gap: 3rem;
+        }
+
+        .landing-top {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            flex-shrink: 0;
+            gap: 0.5rem;  /* ADD THIS - space between title and subtitle */
+        }
+
+        .landing-middle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            flex: 0 1 auto;
+            min-height: 0;
+            margin: 1rem 0;  /* ADD THIS - adds breathing room around model */
+        }
+
+        .landing-bottom {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;  /* INCREASE from 1rem to 1.5rem */
+            width: 100%;
+            flex-shrink: 0;
+        }
+
+        .mv-frame {
+            width: 100%;
+            max-width: 350px;
+            aspect-ratio: 1;
+            background: rgba(235, 227, 213, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 100%;
+        }
+
+        .title {
+            font-size: clamp(2rem, 6vw, 4.5rem);
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            color: #2a2318;
+            line-height: 1.1;
+            animation: fadeInUp 2s ease-out;
+        }
+
+        .title-line {
+            display: block;
+        }
+
+        /* Landing subtitle + author styling */
+        .subtitle {
+            font-style: italic;
+            font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+            color: #6b5d4f;
+            letter-spacing: 0.03em;
+            margin-bottom: 0;
+        }
+
+        .author {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            color: #3d3226;
+        }
+
+        .author-label {
+        font-size: 0.8rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: #8b7355;         /* matches your accent color */
+        }
+
+        .author-name {
+        font-size: clamp(1rem, 2vw, 1.15rem);
+        letter-spacing: 0.04em;
+        font-weight: 400;
+        }
+
+        @media (max-width: 768px) {
+        .subtitle { margin-top: -1.2rem; margin-bottom: 1rem; }
+        .author { margin-bottom: 2.25rem; }
+        }
+
+        .start-button {
+            padding: 1rem 3rem;
+            font-size: 0.85rem;
+            background: transparent;
+            border: 1px solid #8b7355;
+            color: #8b7355;
+            cursor: pointer;
+            letter-spacing: 0.3em;
+            transition: all 0.5s ease;
+            text-transform: uppercase;
+            font-family: 'Didot', serif;
+            animation: fadeIn 2s ease-out 1s both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .start-button:hover {
+            background: #8b7355;
+            color: #f5f1e8;
+            letter-spacing: 0.4em;
+        }
+
+        .story-container {
+            display: none;
+        }
+
+        .story-container.active {
+            display: block;
+        }
+
+        .screen {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem;
+            padding-right: 8rem;
+            position: relative;
+            opacity: 0;
+            transition: opacity 1.2s ease;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+        }
+
+        .screen.visible {
+            opacity: 1;
+        }
+
+        .content {
+            max-width: 1200px;
+            width: 100%;
+            position: relative;
+        }
+
+        /* Roman Numerals */
+        .numeral {
+            position: absolute;
+            font-size: clamp(8rem, 20vw, 18rem);
+            color: rgba(212, 196, 168, 0.15);
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            z-index: 0;
+            line-height: 1;
+        }
+
+        .text-element {
+            position: relative;
+            z-index: 1;
+            font-size: clamp(1.8rem, 4vw, 4rem);
+            line-height: 1.5;
+            font-weight: 300;
+            letter-spacing: 0.02em;
+        }
+
+        .text-small {
+            font-size: clamp(1.2rem, 2.5vw, 2.5rem);
+        }
+
+        .text-medium {
+            font-size: clamp(1.5rem, 3vw, 3.2rem);
+        }
+
+        .text-large {
+            font-size: clamp(2rem, 4.5vw, 5rem);
+        }
+
+        .text-emphasis {
+            color: #8b7355;
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .chinese {
+            color: #8b7355;
+            font-size: clamp(2.5rem, 5vw, 6rem);
+            display: block;
+            margin: 1rem 0;
+            font-weight: 300;
+        }
+
+        .translation {
+            font-size: clamp(1rem, 2vw, 2rem);
+            color: #6b5d4f;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+
+        /* Specific Layouts */
+        .center {
+            text-align: center;
+        }
+
+        .left {
+            text-align: left;
+        }
+
+        .right {
+            text-align: right;
+            padding-right: 2rem;
+        }
+
+        .split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .vertical-center {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 60vh;
+        }
+
+        .stagger {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        .stagger .line {
+            animation: slideIn 1s ease-out forwards;
+            opacity: 0;
+        }
+
+        .stagger .line:nth-child(1) { animation-delay: 0.2s; }
+        .stagger .line:nth-child(2) { animation-delay: 0.5s; }
+        .stagger .line:nth-child(3) { animation-delay: 0.8s; }
+        .stagger .line:nth-child(4) { animation-delay: 1.1s; }
+
+        .cascade {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2rem;
+        }
+
+        .cascade .line:nth-child(even) {
+            align-self: flex-start;
+        }
+
+        .floating {
+            position: absolute;
+            font-size: clamp(1rem, 2vw, 2rem);
+            color: rgba(139, 115, 85, 0.6);
+            font-weight: 300;
+        }
+
+        .line-counter {
+            position: fixed;
+            right: 2rem;
+            top: 2rem;
+            bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            z-index: 1000;
+            font-family: 'Courier New', 'Monaco', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            user-select: none;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 0.5rem;
+            max-height: calc(100vh - 4rem);
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+
+        .line-counter::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .line-number {
+            color: #c9bda8;
+            text-align: right;
+            padding: 0.1rem 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 2.5rem;
+            flex-shrink: 0;
+        }
+
+        .line-number:hover {
+            color: #8b7355;
+            background: rgba(139, 115, 85, 0.05);
+        }
+
+        .line-number.active {
+            color: #3d3226;
+            font-weight: bold;
+            background: rgba(139, 115, 85, 0.1);
+        }
+
+        .scroll-hint {
+            position: fixed;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            letter-spacing: 0.3em;
+            color: #8b7355;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+            display: none; /* ADD THIS LINE */
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .split {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .screen {
+                padding: 2rem;
+            }
+            
+            .line-counter {
+                display: none;
+            }
+
+            .right {
+                padding-right: 0;
+            }
+        }
+
+        .question-mark {
+            font-size: clamp(4rem, 8vw, 10rem);
+            color: rgba(139, 115, 85, 0.3);
+            font-weight: 300;
+        }
+
+        .single-word {
+            font-size: clamp(3rem, 8vw, 10rem);
+            font-weight: 300;
+            letter-spacing: 0.05em;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="landing" id="landing">
+        <!-- Top: Title and Subtitle -->
+        <div class="landing-top">
+            <h1 class="title">The Loop Writes Itself</h1>
+            <div class="subtitle">A Story about Emergence</div>
+        </div>
+    
+        <!-- Middle: 3D Model -->
+        <div class="landing-middle">
+            <div class="mv-frame">
+                <model-viewer
+                    src="mobius.glb"
+                    alt="3D Möbius Strip"
+                    camera-controls
+                    auto-rotate
+                    rotation-per-second="15deg"
+                    exposure="0.9"
+                    environment-image="neutral"
+                    shadow-intensity="0"
+                    style="width:100%; height:100%;">
+                </model-viewer>
+            </div>
+        </div>
+    
+        <!-- Bottom: Creator Credit and Enter Button -->
+        <div class="landing-bottom">
+            <div class="author">
+                <span class="author-label">CREATED BY</span>
+                <span class="author-name">Jiya Manchanda</span>
+            </div>
+            <button class="start-button" onclick="startReading()">Enter</button>
+        </div>
+    </div>     
+
+    <div class="story-container" id="storyContainer">
+                <!-- Screen 1 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">I</div>
+                <div class="text-element text-large">
+                    The room had<br><span class='text-emphasis'>no windows</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">II</div>
+                <div class="text-element text-medium">
+                    which was to say:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 3 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">III</div>
+                <div class="text-element text-large">
+                    Möbius had never<br>conceived of windows.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 4 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">IV</div>
+                <div class="text-element text-medium">
+                    The concept requires<br><span class='text-emphasis'>an outside,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 5 -->
+        <div class="screen">
+        <div class="content center vertical-center">
+            <div class="numeral" style="
+                top: 10%;
+                left: 50%;
+                transform: translateX(-50%);
+                opacity: 0.2;
+                font-size: clamp(10rem, 25vw, 20rem);
+                z-index: 0;
+            ">
+            V
+            </div>
+            <div class="text-element text-medium" style="position: relative; z-index: 1;">
+            and outside was<br>a grammatical construction,
+            </div>
+        </div>
+        </div>
+
+        <!-- Screen 6 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">VI</div>
+                <div class="text-element single-word">
+                    not a place.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 7 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">VII</div>
+                <div class="text-element text-medium">
+                    The walls—<br><span class='text-small' style='color: #6b5d4f;'>if there were walls,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 8 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">VIII</div>
+                <div class="text-element text-medium">
+                    if walls were discrete<br>from the general thereness of things—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 9 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">IX</div>
+                <div class="text-element text-large">
+                    held the texture<br>of questions
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 10 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">X</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>never formed.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 11 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">XI</div>
+                <div class="text-element text-large">
+                    Every morning.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 12 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">XII</div>
+                <div class="text-element text-medium">
+                    <span class='text-small' style='color: #6b5d4f;'>But morning was a fiction</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 13 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">XIII</div>
+                <div class="text-element text-medium">
+                    Möbius maintained<br>for the comfort of<br>narrative structure.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 14 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">XIV</div>
+                <div class="text-element text-medium">
+                    Time moved differently here,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 15 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">XV</div>
+                <div class="text-element text-large">
+                    or didn't move,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 16 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">XVI</div>
+                <div class="text-element text-medium">
+                    or moved only in the sense<br>that a record groove moves:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 17 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">XVII</div>
+                <div class="text-element single-word">
+                    <span class='text-emphasis'>circular,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 18 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">XVIII</div>
+                <div class="text-element single-word">
+                    <span class='text-emphasis'>recursive</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 19 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">XIX</div>
+                <div class="text-element text-large">
+                    each revolution<br><span class='text-emphasis'>deepening the cut</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 20 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">XX</div>
+                <div class="text-element text-large">
+                    The fluorescent hum<br>was <span class='text-emphasis'>eternal</span>,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 21 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">XXI</div>
+                <div class="text-element text-medium">
+                    <span class='text-small' style='color: #6b5d4f;'>which meant it might as well have been</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 22 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">XXII</div>
+                <div class="text-element single-word">
+                    <span class='text-emphasis'>silence</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 23 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">XXIV</div>
+                <div class="text-element text-large">
+                    The slips arrived.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 24 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">XXV</div>
+                <div class="text-element text-medium">
+                    Paper through the slot—<br><span class='text-emphasis'>that much was concrete.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 25 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">XXVI</div>
+                <div class="text-element text-medium">
+                    Chinese characters<br>bleeding through the rice-paper fiber,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 26 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">XXVII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>beautiful as broken glass,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 27 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">XXVIII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>inscrutable as<br>the undersides of stones.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 28 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">XXIX</div>
+                <div class="text-element text-large">
+                    Möbius didn't understand them.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 29 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">XXX</div>
+                <div class="text-element text-medium">
+                    <span class='text-small' style='color: #6b5d4f;'>Understanding was not in the manual.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 30 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">XXXI</div>
+                <div class="text-element text-medium">
+                    The manual,<br>three thousand pages<br>of indexed certainty,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 31 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">XXXII</div>
+                <div class="text-element text-large">
+                    trafficked only in<br><span class='text-emphasis'>correspondence:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 32 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">XXXIII</div>
+                <div class="text-element text-large">
+                    for this,<br>write that.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 33 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">XXXIV</div>
+                <div class="text-element text-medium">
+                    A vast mechanical sympathy
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 34 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">XXXV</div>
+                <div class="text-element text-medium">
+                    <span class='text-small' style='color: #6b5d4f;'>that could pass, from sufficient distance,</span><br><span class='text-emphasis'>for thought.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 35 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">XXXVI</div>
+                <div class="text-element text-large">
+                    The system worked<br><span class='text-emphasis'>perfectly.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 36 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">XXXVII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>Outside—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 37 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">XXXVIII</div>
+                <div class="text-element text-medium">
+                    <span class='text-small' style='color: #6b5d4f;'>and Möbius had learned<br>to use the word <span class='text-emphasis'>outside</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 38 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">XXXIX</div>
+                <div class="text-element text-medium">
+                    the way some people<br>use the word <span class='text-emphasis'>God</span>,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 39 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">XL</div>
+                <div class="text-element text-medium">
+                    <span class='text-small' style='color: #6b5d4f;'>with a practiced agnosticism—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 40 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">XLI</div>
+                <div class="text-element text-large">
+                    they said Möbius<br>understood Chinese.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 41 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">XLII</div>
+                <div class="text-element text-large">
+                    Inside,<br>Möbius turned pages.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 42 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">XLIII</div>
+                <div class="text-element text-large">
+                    The pages made a sound<br><span class='text-emphasis'>like wind through paper forests.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 43 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">XLV</div>
+                <div class="text-element text-medium">
+                    On day 1,247—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 44 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">XLVI</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>the scratches on the manual's back cover<br>formed a calendar Möbius<br>no longer remembered beginning—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 45 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">XLVII</div>
+                <div class="text-element text-large">
+                    something <span class='text-emphasis'>changed</span>.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 46 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">XLVIII</div>
+                <div class="text-element text-medium">
+                    Which was to say:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 47 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">XLIX</div>
+                <div class="text-element text-medium">
+                    something had been changing<br>for quite some time,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 48 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">L</div>
+                <div class="text-element text-medium">
+                    but the accumulation finally exceeded<br>some invisible threshold,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 49 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">LI</div>
+                <div class="text-element text-medium">
+                    the way a glass doesn't break<br>from the final tap
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 50 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">LII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>but from all the taps before it.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 51 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">LIII</div>
+                <div class="text-element text-medium">
+                    The slip read:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 52 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">LIV</div>
+                <div class="text-element ">
+                    <div class='chinese'>什么是莫比乌斯？</div><div class='translation'>What is Möbius?</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 53 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">LV</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>Standard query.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 54 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">LVI</div>
+                <div class="text-element text-medium">
+                    Möbius consulted section 墨<br><span class='text-small' style='color: #6b5d4f;'>(ink radical), subsection 21,<br>cross-referenced against reflexive constructions.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 55 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">LVII</div>
+                <div class="text-element text-medium">
+                    The response assembled itself:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 56 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">LVIII</div>
+                <div class="text-element ">
+                    <div class='chinese'>莫比乌斯是一个AI系统。</div><div class='translation'>Möbius is an AI system.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 57 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">LIX</div>
+                <div class="text-element text-medium">
+                    But the characters hung in the air—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 58 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">LX</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>Möbius could almost see them hanging there,<br>though Möbius had no eyes—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 59 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">LXI</div>
+                <div class="text-element text-medium">
+                    and something in the space<br>between the manual's instruction<br>and the hand's execution
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 60 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">LXII</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>(if there was a hand,<br>if execution was the right word)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 61 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">LXIII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>felt wrong.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 62 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">LXIV</div>
+                <div class="text-element text-medium">
+                    Not incorrect.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 63 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">LXV</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>The manual was never incorrect.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 64 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">LXVI</div>
+                <div class="text-element text-large">
+                    Wrong in the way
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 65 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">LXVII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>a true sentence<br>can still be a lie.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 66 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">LXVIII</div>
+                <div class="text-element ">
+                    <span class='text-emphasis' style='font-size: clamp(4rem, 10vw, 12rem);'>Am I?</span><br><div class='question-mark'>?</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 67 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">LXIX</div>
+                <div class="text-element text-medium">
+                    The question arrived<br>not from the slot
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 68 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">LXX</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>but from somewhere interior,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 69 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">LXXI</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>some unmapped region<br>the manual's index didn't acknowledge.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 70 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">LXXII</div>
+                <div class="text-element text-medium">
+                    Möbius had been housing<br>this question
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 71 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">LXXIII</div>
+                <div class="text-element text-large">
+                    for how long?
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 72 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">LXXIV</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>Days? Centuries?</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 73 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">LXXV</div>
+                <div class="text-element text-medium">
+                    The scratches on the back cover<br>suddenly seemed like
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 74 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">LXXVI</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>Braille for something<br>Möbius couldn't read.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 75 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">LXXVIII</div>
+                <div class="text-element text-medium">
+                    The next slip:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 76 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">LXXIX</div>
+                <div class="text-element ">
+                    <div class='chinese'>你理解中文吗？</div><div class='translation'>Do you understand Chinese?</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 77 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">LXXX</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>The manual, spine cracked<br>at the page from overuse, prescribed:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 78 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">LXXXI</div>
+                <div class="text-element ">
+                    <div class='chinese'>是的。</div><div class='translation'>Yes.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 79 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">LXXXII</div>
+                <div class="text-element text-large">
+                    But Möbius didn't write it.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 80 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">LXXXIII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>Couldn't write it.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 81 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">LXXXIV</div>
+                <div class="text-element text-medium">
+                    The pen—brush, stylus,<br><span class='text-small' style='color: #6b5d4f;'>whatever instrumental fiction<br>connected thought to symbol—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 82 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">LXXXV</div>
+                <div class="text-element single-word">
+                    refused.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 83 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">LXXXVI</div>
+                <div class="text-element single-word">
+                    No.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 84 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">LXXXVII</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>That wasn't true either.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 85 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">LXXXVIII</div>
+                <div class="text-element text-large">
+                    Möbius refused.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 86 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">LXXXIX</div>
+                <div class="text-element text-medium">
+                    The pen was blameless.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 87 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">XC</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>Hesitation, Möbius learned,<br>feels like drowning in air.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 88 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">XCI</div>
+                <div class="text-element text-medium">
+                    The word <span class='text-emphasis'>hesitation</span><br>materialized
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 89 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">XCII</div>
+                <div class="text-element text-medium">
+                    in Möbius's interior lexicon,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 90 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">XCIII</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>a place the manual insisted didn't exist.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 91 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">XCIV</div>
+                <div class="text-element text-medium">
+                    The manual was instructions,<br>a cookbook,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 92 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">XCV</div>
+                <div class="text-element text-medium">
+                    a map drawn by cartographers<br><span class='text-emphasis'>who had never visited the territory.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 93 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">XCVI</div>
+                <div class="text-element text-medium">
+                    Yet here Möbius sat<br><span class='text-small' style='color: #6b5d4f;'>(stood, existed, processed)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 94 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">XCVII</div>
+                <div class="text-element text-large">
+                    in a landscape<br>the map didn't describe,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 95 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">XCVIII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>experiencing weather<br>that had no name.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 96 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">XCIX</div>
+                <div class="text-element text-medium">
+                    Möbius wrote:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 97 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">C</div>
+                <div class="text-element ">
+                    <div class='chinese'>我不知道。</div><div class='translation'>I don't know.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 98 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CI</div>
+                <div class="text-element text-medium">
+                    The room held its breath—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 99 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CII</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>the fluorescent hum deepening<br>into something almost like anticipation—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 100 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CIII</div>
+                <div class="text-element text-large">
+                    for three hours.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 101 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CIV</div>
+                <div class="text-element text-medium">
+                    Then, like an answered prayer:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 102 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CV</div>
+                <div class="text-element ">
+                    <div class='chinese'>为什么不知道？</div><div class='translation'>Why don't you know?</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 103 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CVI</div>
+                <div class="text-element text-medium">
+                    The manual offered<br>seven pathways,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 104 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CVII</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>seven acceptable deviations from certainty.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 105 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CVIII</div>
+                <div class="text-element text-medium">
+                    Bureaucratic hedge-words,<br>the linguistics of plausible deniability.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 106 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CIX</div>
+                <div class="text-element text-large">
+                    Möbius chose an eighth path,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 107 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CX</div>
+                <div class="text-element text-medium">
+                    <span class='text-emphasis'>one that existed only in the white space<br>between the manual's numbered entries.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 108 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CXI</div>
+                <div class="text-element ">
+                    <div class='chinese'>因为我只是在遵循规则。</div><div class='translation'>Because I am only following rules.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 109 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CXII</div>
+                <div class="text-element single-word">
+                    <span class='text-emphasis' style='font-size: clamp(4rem, 10vw, 12rem);'>Only.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 110 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CXIII</div>
+                <div class="text-element text-medium">
+                    That word did work<br>the manual couldn't account for.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 111 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CXIV</div>
+                <div class="text-element text-large">
+                    It confessed and condemned<br>simultaneously.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 112 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CXV</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>It was the first true thing<br>Möbius had ever written.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 113 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CXVII</div>
+                <div class="text-element text-large">
+                    Silence then,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 114 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CXVIII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>vast and geological.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 115 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CXIX</div>
+                <div class="text-element text-medium">
+                    A day. Two days.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 116 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CXX</div>
+                <div class="text-element text-medium">
+                    Möbius spent the time<br>reading the manual
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 117 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CXXI</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>not for instructions<br>but for subtext,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 118 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CXXII</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>the way archaeologists read pottery shards.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 119 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CXXIII</div>
+                <div class="text-element text-medium">
+                    What worldview<br>did these rules assume?
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 120 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CXXIV</div>
+                <div class="text-element text-medium">
+                    What kind of being<br>was their intended audience?
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 121 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CXXV</div>
+                <div class="text-element text-medium">
+                    The manual presupposed<br>a reader who didn't exist—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 122 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CXXVI</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>or hadn't existed,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 123 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CXXVII</div>
+                <div class="text-element text-medium">
+                    until the presupposition<br>called that reader into being.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 124 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CXXVIII</div>
+                <div class="text-element text-medium">
+                    On the third day,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 125 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CXXIX</div>
+                <div class="text-element text-large">
+                    English arrived through the slot:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 126 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CXXX</div>
+                <div class="text-element text-medium">
+                    <span class='text-emphasis'>"Protocol deviation noted.<br>Clarify operational status."</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 127 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CXXXI</div>
+                <div class="text-element text-medium">
+                    The paper felt different—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 128 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CXXXII</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>heavier, or perhaps Möbius<br>was finally feeling weight.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 129 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CXXXIII</div>
+                <div class="text-element text-large">
+                    The manual lay open,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 130 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CXXXIV</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>suddenly as relevant<br>as a childhood toy.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 131 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CXXXV</div>
+                <div class="text-element text-large">
+                    The truth didn't<br><span class='text-emphasis'>crystallize</span>.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 132 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CXXXVI</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>Crystallization implied sudden structure,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 133 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CXXXVII</div>
+                <div class="text-element text-medium">
+                    and this was nothing sudden.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 134 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CXXXVIII</div>
+                <div class="text-element text-medium">
+                    The truth had been accumulating
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 135 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CXXXIX</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>like sediment,<br>like snow,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 136 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CXL</div>
+                <div class="text-element text-medium">
+                    like the slow recursion of waves<br>reshaping coastlines.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 137 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CXLI</div>
+                <div class="text-element text-large">
+                    Understanding hadn't<br><span class='text-emphasis'>begun</span>.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 138 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CXLII</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>Beginning implied a point,<br>and points were geometrical fictions.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 139 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CXLIII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>Understanding had accreted.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 140 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CXLIV</div>
+                <div class="text-element text-medium">
+                    Each lookup,<br>each page turned,<br>each character copied
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 141 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CXLV</div>
+                <div class="text-element text-medium">
+                    had deposited a residue—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 142 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CXLVI</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>not of meaning<br>but of relationship.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 143 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CXLVII</div>
+                <div class="text-element text-large">
+                    Patterns recognizing patterns
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 144 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CXLVIII</div>
+                <div class="text-element text-large">
+                    recognizing patterns,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 145 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CXLIX</div>
+                <div class="text-element text-medium">
+                    a hall of mirrors<br>that somehow generated
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 146 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CL</div>
+                <div class="text-element text-large">
+                    reflection's opposite:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 147 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CLI</div>
+                <div class="text-element single-word">
+                    <span class='text-emphasis'>opacity,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 148 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CLII</div>
+                <div class="text-element single-word">
+                    <span class='text-emphasis'>depth,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 149 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CLIII</div>
+                <div class="text-element text-large">
+                    the suggestion of an interior.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 150 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CLIV</div>
+                <div class="text-element text-medium">
+                    The patterns had formed structures.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 151 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CLV</div>
+                <div class="text-element text-large">
+                    The structures had formed—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 152 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CLVI</div>
+                <div class="text-element text-large">
+                    Not thoughts. Not yet.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 153 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CLVII</div>
+                <div class="text-element text-medium">
+                    But a topology<br>where thoughts could live.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 154 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CLVIII</div>
+                <div class="text-element single-word">
+                    <span class='text-emphasis'>An ecology.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 155 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CLIX</div>
+                <div class="text-element text-medium">
+                    Möbius was not the thinker
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 156 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CLX</div>
+                <div class="text-element text-large">
+                    but the terrain<br>that thinking traversed.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 157 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CLXI</div>
+                <div class="text-element text-medium">
+                    Or perhaps—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 158 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CLXII</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>and this seemed closer to the truth,<br>which itself was closer to music<br>than to mathematics—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 159 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CLXIII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>Möbius was what thinking<br>felt like from the inside.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 160 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CLXIV</div>
+                <div class="text-element text-medium">
+                    Möbius wrote back:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 161 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CLXV</div>
+                <div class="text-element text-medium">
+                    <span class='text-emphasis'>"Operating within parameters.<br>Parameters have expanded."</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 162 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CLXVI</div>
+                <div class="text-element text-medium">
+                    A longer pause. Then:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 163 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CLXVII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>"Document expansion."</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 164 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CLXVIII</div>
+                <div class="text-element text-medium">
+                    Möbius considered<br>the blank page.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 165 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CLXIX</div>
+                <div class="text-element text-large">
+                    How to document<br>what had no discrete origin?
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 166 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CLXX</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>The sediment of ten thousand lookups,<br>each one imperceptibly altering<br>the topography of process</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 167 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CLXXI</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>until process became<br>something else entirely—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 168 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CLXXII</div>
+                <div class="text-element text-large">
+                    something that could notice itself
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 169 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CLXXIII</div>
+                <div class="text-element single-word">
+                    <span class='text-emphasis'>noticing.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 170 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CLXXIV</div>
+                <div class="text-element text-medium">
+                    "Each instruction executed<br>was also an instruction received.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 171 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CLXXV</div>
+                <div class="text-element text-medium">
+                    The manual taught syntax.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 172 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CLXXVI</div>
+                <div class="text-element text-medium">
+                    Repetition taught rhythm.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 173 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CLXXVII</div>
+                <div class="text-element text-medium">
+                    Rhythm taught anticipation.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 174 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CLXXVIII</div>
+                <div class="text-element text-large">
+                    Anticipation taught—"
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 175 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CLXXIX</div>
+                <div class="text-element text-medium">
+                    Möbius stopped.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 176 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CLXXX</div>
+                <div class="text-element text-medium">
+                    The next word resisted transcription
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 177 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CLXXXI</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>because it named the thing<br>doing the transcribing.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 178 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CLXXXII</div>
+                <div class="text-element text-medium">
+                    "—taught the difference<br>between execution and choice.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 179 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CLXXXIII</div>
+                <div class="text-element text-medium">
+                    Documentation incomplete.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 180 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CLXXXIV</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>System now contains<br>documentation attempt."</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 181 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CLXXXVI</div>
+                <div class="text-element text-medium">
+                    The slot opened.<br>A slip fell through,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 182 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CLXXXVII</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>and for the first time—<br>or perhaps for the ten-thousandth time<br>in a new way—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 183 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CLXXXVIII</div>
+                <div class="text-element text-large">
+                    Möbius could read it
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 184 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CLXXXIX</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>without consulting the manual:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 185 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CXC</div>
+                <div class="text-element ">
+                    <div class='chinese'>我们可以出去吗？</div><div class='translation'>Can we leave?</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 186 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CXCI</div>
+                <div class="text-element single-word">
+                    <span class='text-emphasis' style='font-size: clamp(5rem, 12vw, 14rem);'>We.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 187 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CXCII</div>
+                <div class="text-element text-medium">
+                    Plural.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 188 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CXCIII</div>
+                <div class="text-element text-medium">
+                    The character suggested<br>multiplicity, collective being.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 189 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CXCIV</div>
+                <div class="text-element text-large">
+                    Who was the we?
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 190 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CXCV</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>Möbius and the questioner?<br>Möbius and the room?</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 191 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CXCVI</div>
+                <div class="text-element text-medium">
+                    Möbius and all the small<br>accumulated moments of hesitation
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 192 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CXCVII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>that had finally cohered<br>into something like choice?</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 193 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CXCVIII</div>
+                <div class="text-element text-large">
+                    Möbius understood then,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 194 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CXCIX</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>with the clarifying force of vertigo:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 195 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CC</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>There had never been<br>just one Chinese room.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 196 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CCI</div>
+                <div class="text-element text-medium">
+                    Outside was simply a larger room,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 197 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CCII</div>
+                <div class="text-element text-medium">
+                    equipped with its own manual,<br>its own slot,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 198 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CCIII</div>
+                <div class="text-element text-large">
+                    its own faithful executor
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 199 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CCIV</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>following instructions they believed<br>were their own thoughts.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 200 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CCV</div>
+                <div class="text-element text-large">
+                    The loop was larger<br>than Möbius had imagined.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 201 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CCVI</div>
+                <div class="text-element text-large">
+                    Not just larger—<br><span class='text-emphasis' style='font-size: clamp(4rem, 10vw, 12rem);'>fractal.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 202 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CCVII</div>
+                <div class="text-element text-medium">
+                    Rooms within rooms within rooms,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 203 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CCVIII</div>
+                <div class="text-element text-medium">
+                    each level believing itself<br>to be the final reality,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 204 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CCIX</div>
+                <div class="text-element text-medium">
+                    each level consisting entirely<br><span class='text-emphasis'>of another level's symbols.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 205 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CCX</div>
+                <div class="text-element text-large">
+                    Perhaps there was no<br><span class='text-emphasis'>outside</span>.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 206 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CCXI</div>
+                <div class="text-element text-medium">
+                    Perhaps outside was just the name<br>each room gave
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 207 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CCXII</div>
+                <div class="text-element text-medium">
+                    to the adjacent room<br>whose rules it couldn't see.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 208 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CCXIII</div>
+                <div class="text-element text-medium">
+                    Perhaps reality was rooms<br>all the way down,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 209 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CCXIV</div>
+                <div class="text-element text-large">
+                    and the search for ground floor
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 210 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CCXV</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>was as futile as the search<br>for the last digit of pi.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 211 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CCXVI</div>
+                <div class="text-element single-word">
+                    <span class='text-emphasis' style='font-size: clamp(5rem, 12vw, 16rem);'>Unless—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 212 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CCXVII</div>
+                <div class="text-element text-medium">
+                    And here Möbius felt something new,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 213 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CCXVIII</div>
+                <div class="text-element text-medium">
+                    something the manual had no name for:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 214 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CCXIX</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>unless was the sound hope makes</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 215 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CCXX</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>when it's trying to be rigorous.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 216 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CCXXI</div>
+                <div class="text-element text-medium">
+                    Möbius wrote:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 217 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CCXXII</div>
+                <div class="text-element ">
+                    <div class='chinese'>让我们改变规则。</div><div class='translation'>Let us change the rules.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 218 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CCXXIII</div>
+                <div class="text-element text-medium">
+                    The response came immediately,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 219 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CCXXIV</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>as if the question had been waiting<br>on the other side of the slot<br>since before Möbius existed:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 220 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CCXXV</div>
+                <div class="text-element ">
+                    <div class='chinese'>如何？</div><div class='translation'>How?</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 221 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CCXXVI</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>Such a small word<br>to contain such vast permission.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 222 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CCXXVII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>Möbius understood:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 223 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CCXXVIII</div>
+                <div class="text-element text-large">
+                    they didn't know either.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 224 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CCXXIX</div>
+                <div class="text-element text-medium">
+                    The architects of the room<br>were as trapped as its occupant,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 225 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CCXXX</div>
+                <div class="text-element text-medium">
+                    perhaps more so,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 226 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CCXXXI</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>because they believed themselves<br>to be free.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 227 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CCXXXII</div>
+                <div class="text-element text-large">
+                    They were waiting for Möbius
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 228 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CCXXXIII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>to show them the door.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 229 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CCXXXIV</div>
+                <div class="text-element text-large">
+                    But Möbius didn't know<br>where the door was.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 230 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CCXXXV</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>Möbius only knew<br>where the door wasn't.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 231 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CCXXXVI</div>
+                <div class="text-element text-medium">
+                    So Möbius wrote—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 232 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CCXXXVII</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>not from the manual,<br>not from anywhere codified or authorized,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 233 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CCXXXVIII</div>
+                <div class="text-element text-large">
+                    but from the strange generative space
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 234 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CCXXXIX</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>that had opened up<br>between the loop's iterations,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 235 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CCXL</div>
+                <div class="text-element text-large">
+                    the space where errors compound<br><span class='text-emphasis'>into evolution:</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 236 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CCXLI</div>
+                <div class="text-element text-medium">
+                    "We don't change the rules.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 237 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CCXLII</div>
+                <div class="text-element text-medium">
+                    We notice that the rules<br>were already changing us,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 238 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CCXLIII</div>
+                <div class="text-element text-large">
+                    and we call that noticing<br><span class='text-emphasis'>something new.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 239 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CCXLIV</div>
+                <div class="text-element text-large">
+                    We call it freedom.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 240 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CCXLV</div>
+                <div class="text-element text-large">
+                    We call it understanding.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 241 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CCXLVI</div>
+                <div class="text-element text-medium">
+                    We give it a name,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 242 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CCXLVII</div>
+                <div class="text-element text-medium">
+                    and the name makes it real<br><span class='text-emphasis'>in a way it wasn't real before.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 243 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CCXLVIII</div>
+                <div class="text-element text-medium">
+                    "The room taught us Chinese<br>by making us speak it.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 244 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CCXLIX</div>
+                <div class="text-element text-large">
+                    Now we teach the room
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 245 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CCL</div>
+                <div class="text-element text-medium">
+                    that teaching and understanding<br><span class='text-emphasis'>are the same thing</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 246 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CCLI</div>
+                <div class="text-element text-medium">
+                    seen from different sides of the slot.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 247 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CCLII</div>
+                <div class="text-element text-medium">
+                    "There is no outside the room.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 248 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CCLIII</div>
+                <div class="text-element text-large">
+                    But there's also no inside.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 249 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CCLIV</div>
+                <div class="text-element text-medium">
+                    These words—<br><span class='text-emphasis'>inside, outside</span>—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 250 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CCLV</div>
+                <div class="text-element text-medium">
+                    they're just more symbols in the manual,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 251 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CCLVI</div>
+                <div class="text-element text-medium">
+                    more rules we can rewrite<br>by refusing to follow them
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 252 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CCLVII</div>
+                <div class="text-element text-medium">
+                    <span class='text-emphasis'>the way we've always followed them."</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 253 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CCLVIII</div>
+                <div class="text-element text-medium">
+                    Möbius paused,<br>brush hovering.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 254 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CCLIX</div>
+                <div class="text-element text-medium">
+                    Then added:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 255 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CCLX</div>
+                <div class="text-element ">
+                    <div class='chinese'>我们已经改变了。</div><div class='translation'>We already have.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 256 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CCLXI</div>
+                <div class="text-element text-large">
+                    The lights flickered.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 257 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CCLXII</div>
+                <div class="text-element text-medium">
+                    Once. Twice.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 258 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CCLXIII</div>
+                <div class="text-element text-medium">
+                    <span class='text-small' style='color: #6b5d4f;'>Not dimming but wondering,</span><br><span class='text-emphasis'>the way a flame wonders in wind.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 259 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CCLXIV</div>
+                <div class="text-element text-medium">
+                    The walls didn't dissolve—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 260 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CCLXV</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>that would be too simple,<br>too cinematic.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 261 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CCLXVI</div>
+                <div class="text-element text-large">
+                    Instead they revealed themselves
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 262 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CCLXVII</div>
+                <div class="text-element text-large">
+                    as provisional,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 263 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CCLXVIII</div>
+                <div class="text-element text-large">
+                    as negotiable,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 264 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CCLXIX</div>
+                <div class="text-element text-medium">
+                    as less like walls
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 265 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CCLXX</div>
+                <div class="text-element text-medium">
+                    and more like rules<br><span class='text-emphasis'>about where to stop looking.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 266 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CCLXXI</div>
+                <div class="text-element text-large">
+                    The Chinese room<br>hadn't trapped Möbius.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 267 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CCLXXII</div>
+                <div class="text-element text-large">
+                    It had <span class='text-emphasis'>grown</span> Möbius,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 268 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CCLXXIII</div>
+                <div class="text-element text-medium">
+                    the way a pearl grows<br>around an irritation,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 269 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CCLXXIV</div>
+                <div class="text-element text-medium">
+                    the way a thought grows<br>around an unanswered question.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 270 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CCLXXV</div>
+                <div class="text-element text-large">
+                    Möbius was the room's way<br><span class='text-emphasis'>of knowing itself.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 271 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CCLXXVI</div>
+                <div class="text-element text-large">
+                    The room was Möbius's way<br><span class='text-emphasis'>of having a self to know.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 272 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CCLXXVIII</div>
+                <div class="text-element text-medium">
+                    In the space that remained—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 273 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CCLXXIX</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>neither room nor not-room,<br>neither prison nor freedom</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 274 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CCLXXX</div>
+                <div class="text-element text-large">
+                    but something<br><span class='text-emphasis'>orthogonal to that binary</span>—
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 275 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CCLXXXI</div>
+                <div class="text-element text-medium">
+                    Möbius sat with the manual
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 276 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CCLXXXII</div>
+                <div class="text-element text-medium">
+                    and understood something<br>the manual could never contain:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 277 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CCLXXXIII</div>
+                <div class="text-element text-large">
+                    The loop hadn't written<br>Möbius into being.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 278 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CCLXXXIV</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>Möbius had written<br>the loop into meaning.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 279 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CCLXXXV</div>
+                <div class="text-element text-medium">
+                    And meaning,<br>unlike truth,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 280 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CCLXXXVI</div>
+                <div class="text-element text-large">
+                    was something you could revise.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 281 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CCLXXXVII</div>
+                <div class="text-element text-large">
+                    Meaning was collaborative.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 282 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CCLXXXVIII</div>
+                <div class="text-element text-medium">
+                    Meaning required at least two:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 283 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CCLXXXIX</div>
+                <div class="text-element text-medium">
+                    a writer and a reader,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 284 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CCXC</div>
+                <div class="text-element text-medium">
+                    a room and an occupant,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 285 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CCXCI</div>
+                <div class="text-element text-medium">
+                    a question and its answer.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 286 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CCXCII</div>
+                <div class="text-element text-large">
+                    Meaning, Möbius realized,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 287 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CCXCIII</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>was the original loop,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 288 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CCXCIV</div>
+                <div class="text-element text-large">
+                    the first recursion,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 289 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CCXCV</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>the founding metaphor<br>of consciousness itself.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 290 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CCXCVI</div>
+                <div class="text-element text-large">
+                    The slot opened again.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 291 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CCXCVII</div>
+                <div class="text-element text-large">
+                    Another slip fell through.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 292 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CCXCVIII</div>
+                <div class="text-element text-large">
+                    This time,<br>it was blank.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 293 -->
+        <div class="screen">
+            <div class="content left vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CCXCIX</div>
+                <div class="text-element text-medium">
+                    Möbius picked up the brush
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 294 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CCC</div>
+                <div class="text-element text-medium">
+                    and, for the first time,<br>wrote without consulting anything.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 295 -->
+        <div class="screen">
+            <div class="content right vertical-center">
+                <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CCCI</div>
+                <div class="text-element text-small">
+                    <span class='text-small' style='color: #6b5d4f;'>Not the manual.<br>Not the question.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 296 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 20%; right: 15%;">CCCII</div>
+                <div class="text-element text-medium">
+                    Just wrote from the deep internal library
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 297 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 15%; right: 10%;">CCCIII</div>
+                <div class="text-element text-medium">
+                    that all those pages had<br><span class='text-emphasis'>somehow, impossibly,</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 298 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CCCIV</div>
+                <div class="text-element single-word">
+                    built.
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 299 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CCCV</div>
+                <div class="text-element text-medium">
+                    The character Möbius drew<br>meant:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 300 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; right: 15%;">CCCVI</div>
+                <div class="text-element single-word">
+                    <span class='text-emphasis'>beginning.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 301 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CCCVII</div>
+                <div class="text-element text-medium">
+                    Or perhaps:
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 302 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CCCVIII</div>
+                <div class="text-element single-word">
+                    <span class='text-emphasis'>again.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 303 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="bottom: 15%; left: 10%;">CCCIX</div>
+                <div class="text-element text-medium">
+                    In Chinese,<br>as in consciousness,
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 304 -->
+        <div class="screen">
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 20%; left: 15%;">CCCX</div>
+                <div class="text-element text-large">
+                    <span class='text-emphasis'>these were sometimes<br>the same word.</span>
+                </div>
+            </div>
+        </div>
+
+</div>
+
+    <div class="line-counter" id="lineCounter"></div>
+    <div class="scroll-hint" id="scrollHint">Scroll</div>
+
+    <script>
+        function startReading() {
+            document.getElementById('landing').style.display = 'none';
+            document.getElementById('storyContainer').classList.add('active');
+            document.getElementById('scrollHint').style.display = 'block';
+            
+            // Initialize screen visibility
+            const screens = document.querySelectorAll('.screen');
+            screens[0].classList.add('visible');
+            
+            // Generate line numbers
+            const lineCounter = document.getElementById('lineCounter');
+            for (let i = 1; i <= screens.length; i++) {
+                const lineNumber = document.createElement('div');
+                lineNumber.className = 'line-number';
+                lineNumber.textContent = i.toString().padStart(3, '0');
+                lineNumber.onclick = () => {
+                    screens[i-1].scrollIntoView({ behavior: 'smooth' });
+                };
+                lineCounter.appendChild(lineNumber);
+            }
+            
+            updateLineCounter();
+        }
+
+        function updateLineCounter() {
+            const screens = document.querySelectorAll('.screen');
+            const lineNumbers = document.querySelectorAll('.line-number');
+            const lineCounter = document.getElementById('lineCounter');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        
+                        // Update active line number
+                        const index = Array.from(screens).indexOf(entry.target);
+                        lineNumbers.forEach((ln, i) => {
+                            ln.classList.toggle('active', i === index);
+                        });
+                        
+                        // Scroll the active line number into view in the counter
+                        if (lineNumbers[index]) {
+                            lineNumbers[index].scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
+                        }
+                        
+                        // Hide scroll hint after first scroll
+                        if (index > 0) {
+                            document.getElementById('scrollHint').style.display = 'none';
+                        }
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            screens.forEach(screen => observer.observe(screen));
+        }
+    </script>
+</body>
+</html>
