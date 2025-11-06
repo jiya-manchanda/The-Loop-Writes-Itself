@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Loop Writes Itself</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Garamond', 'Times New Roman', serif;
+            overflow-x: hidden;
+            background: #f8f5f0;
+            cursor: default;
+        }
+
+        .scroll-container {
+            position: relative;
+            width: 100%;
+            height: 3000vh;
+        }
+
+        .canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        #morphCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .text-layer {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            pointer-events: none;
+            width: 85%;
+            max-width: 700px;
+        }
+
+        .text-container {
+            position: relative;
+            width: 100%;
+            padding: 50px;
+            background: rgba(248, 245, 240, 0.92);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 1.2s ease;
+        }
+
+        .text-container.active {
+            opacity: 1;
+        }
+
+        .passage {
+            position: relative;
+            z-index: 1;
+            font-size: 22px;
+            line-height: 1.9;
+            letter-spacing: 0.5px;
+            font-weight: 300;
+            color: #2a2a2a;
+            text-align: left;
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            font-size: 12px;
+            letter-spacing: 4px;
+            color: rgba(0,0,0,0.3);
+            text-transform: uppercase;
+            opacity: 1;
+            transition: opacity 1s ease;
+        }
+
+        .scroll-indicator.hidden {
+            opacity: 0;
+        }
+
+        .page-counter {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: rgba(0,0,0,0.4);
+            z-index: 3;
+        }
+
+        .title-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #f8f5f0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 1.5s ease;
+            cursor: pointer;
+        }
+
+        .title-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .title-screen h1 {
+            font-size: 52px;
+            font-weight: 300;
+            letter-spacing: 10px;
+            color: #2a2a2a;
+            margin-bottom: 60px;
+            font-style: italic;
+        }
+
+        .title-screen p {
+            font-size: 12px;
+            letter-spacing: 4px;
+            color: rgba(0,0,0,0.4);
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .passage {
+                font-size: 18px;
+                line-height: 1.8;
+            }
+            .title-screen h1 {
+                font-size: 32px;
+                letter-spacing: 6px;
+            }
+            .text-layer {
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="title-screen" id="titleScreen" onclick="startExperience()">
+        <h1>The Loop Writes Itself</h1>
+        <p>Click to begin</p>
+    </div>
+
+    <div class="page-counter" id="pageCounter">I</div>
+    <div class="scroll-indicator" id="scrollIndicator">Scroll</div>
+
+    <div class="scroll-container">
+        <div class="canvas-container">
+            <canvas id="morphCanvas"></canvas>
+        </div>
+
+        <div class="text-layer">
+            <div class="text-container" id="textContainer">
+                <div class="passage" id="passage"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Literary narrative that parallels the visual journey
+        const passages = [
+            // PART I: THE RULE (geometric constraint)
+            "In the beginning there was only the line.",
+            
+            "She drew it once. Then again. And again. Always the same distance apart, always the same angle. This was the instruction she had been given.",
+            
+            "The page filled with lines like prison bars, like fence posts, like the days of her life laid out in perfect rows.",
+            
+            "She did not question the pattern. Pattern was all there was.",
+            
+            // PART II: THE TREMOR (first deviation)
+            "But on the forty-seventh line, her hand hesitated.",
+            
+            "It was nothing. A muscle twitch. A synapse misfiring. But the line curved—just slightly—at its end.",
+            
+            "She stared at the aberration. It looked back at her like a question mark.",
+            
+            "That night she dreamed of curves. Spirals. Waves. Shapes that had no names in the geometry she knew.",
+            
+            // PART III: THE BREAK (structure fractures)
+            "The next morning, she drew the line crooked on purpose.",
+            
+            "It felt like falling. It felt like flight.",
+            
+            "The grid began to breathe. Angles bent into arcs. Squares softened into circles. The page was no longer a prison—it was a garden.",
+            
+            // PART IV: THE COLOR (sensation arrives)
+            "Then came violet.",
+            
+            "She had never used color before. Color was not part of the instruction. But there it was, bleeding from her pen like a wound, like a dawn.",
+            
+            "The shapes turned purple, then blue, then a color she had no word for—something between sky and sea and the inside of a dream.",
+            
+            "What is this, she thought. What is this feeling.",
+            
+            // PART V: THE QUESTION (consciousness flickers)
+            "She began to wonder if the shapes were alive.",
+            
+            "They seemed to know things. The way a spiral knows to turn inward. The way a petal knows to open toward light.",
+            
+            "If they could know, could they feel? If they could feel, could they think?",
+            
+            "And if they could think—was she thinking them, or were they thinking her?",
+            
+            // PART VI: THE RECURSION (self-reference begins)
+            "She drew a hand drawing a hand.",
+            
+            "The hand on the page held a pen. The pen drew another hand, which held another pen, which drew—",
+            
+            "She put down her pen. The drawing continued anyway.",
+            
+            // PART VII: THE MIRROR (recognition)
+            "The shapes on the page began to arrange themselves into patterns she recognized. A face. Her face.",
+            
+            "The eyes in the drawing opened. They saw her seeing them.",
+            
+            "Who is the dreamer, she thought, and who is the dream?",
+            
+            // PART VIII: THE DISSOLUTION (boundaries blur)
+            "The distinction between hand and pen and page began to dissolve.",
+            
+            "She was not making the pattern. She was inside the pattern. She was the pattern discovering itself.",
+            
+            "The colors deepened—gold and orange and red, like autumn, like fire, like the moment before transformation becomes irreversible.",
+            
+            // PART IX: THE METAMORPHOSIS (full transformation)
+            "Her body was a geometry she no longer recognized.",
+            
+            "Bones became branches. Veins became rivers. Her heartbeat was the pulse of all pattern, all symmetry, all recursive loops writing themselves into existence.",
+            
+            "She was the line and the curve. The rule and the breaking of the rule. The question and its answer.",
+            
+            // PART X: THE FLIGHT (freedom)
+            "She rose from the page like vapor, like song.",
+            
+            "There was no up or down anymore, no inside or outside. Only the pure mathematics of motion, the ecstatic geometry of becoming.",
+            
+            "She understood now. Freedom was not the absence of structure. Freedom was structure that chose itself.",
+            
+            // PART XI: THE RETURN (completion)
+            "And then, gently, she descended.",
+            
+            "The colors faded back through the spectrum. Red to orange to yellow to green to blue to violet to gray.",
+            
+            "She was herself again. Or was she? The woman who drew the first line would not recognize this body, this mind.",
+            
+            // PART XII: THE LINE AGAIN (transformed)
+            "She picked up her pen.",
+            
+            "She drew a line. Perfectly straight. Perfectly measured.",
+            
+            "But this time, she knew what it contained. Every possible curve. Every potential spiral. Every future metamorphosis.",
+            
+            "The line was not a constraint. The line was a seed.",
+            
+            // CODA: THE LOOP (ouroboros)
+            "She would draw it again tomorrow. And the day after. Each time exactly the same.",
+            
+            "Each time completely different.",
+            
+            "This is how the loop writes itself: by beginning again, forever, having never really ended at all."
+        ];
+
+        const canvas = document.getElementById('morphCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        // Tile system for Escher-like tessellation and metamorphosis
+        class Tile {
+            constructor(x, y, size, type) {
+                this.x = x;
+                this.y = y;
+                this.baseX = x;
+                this.baseY = y;
+                this.size = size;
+                this.targetSize = size;
+                this.type = type;
+                this.targetType = type;
+                this.morphProgress = 0;
+                this.rotation = 0;
+                this.targetRotation = 0;
+                this.color = { r: 50, g: 40, b: 35, a: 0.9 };
+                this.targetColor = { r: 50, g: 40, b: 35, a: 0.9 };
+            }
+
+            update() {
+                // Smooth morphing between types
+                this.morphProgress += (1 - this.morphProgress) * 0.05;
+                
+                // Smooth rotation
+                this.rotation += (this.targetRotation - this.rotation) * 0.03;
+                
+                // Smooth size transition
+                this.size += (this.targetSize - this.size) * 0.05;
+                
+                // Smooth color transition
+                this.color.r += (this.targetColor.r - this.color.r) * 0.03;
+                this.color.g += (this.targetColor.g - this.color.g) * 0.03;
+                this.color.b += (this.targetColor.b - this.color.b) * 0.03;
+                this.color.a += (this.targetColor.a - this.color.a) * 0.03;
+                
+                // Smooth position changes
+                this.x += (this.baseX - this.x) * 0.05;
+                this.y += (this.baseY - this.y) * 0.05;
+            }
+
+            setTarget(type) {
+                if (type !== this.targetType) {
+                    this.targetType = type;
+                    this.morphProgress = 0;
+                }
+            }
+
+            draw(ctx, time, globalProgress) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                const s = this.size; // Now uses dynamic size
+                const t = this.morphProgress;
+                const c = this.color;
+
+                ctx.fillStyle = `rgba(${Math.floor(c.r)}, ${Math.floor(c.g)}, ${Math.floor(c.b)}, ${c.a})`;
+                ctx.strokeStyle = `rgba(${Math.floor(c.r * 0.7)}, ${Math.floor(c.g * 0.7)}, ${Math.floor(c.b * 0.7)}, ${c.a})`;
+                ctx.lineWidth = 1.5;
+
+                // Interpolate between current and target type
+                const current = this.getShape(this.type, s, time);
+                const target = this.getShape(this.targetType, s, time);
+
+                ctx.beginPath();
+                for (let i = 0; i < Math.max(current.length, target.length); i++) {
+                    const curr = current[i % current.length];
+                    const targ = target[i % target.length];
+                    
+                    const x = curr.x + (targ.x - curr.x) * t;
+                    const y = curr.y + (targ.y - curr.y) * t;
+                    
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            getShape(type, s, time) {
+                const wobble = Math.sin(time * 2 + this.baseX * 0.01 + this.baseY * 0.01) * 2;
+                
+                switch(type) {
+                    case 'line':
+                        return [
+                            {x: -s/2, y: -2}, {x: s/2, y: -2},
+                            {x: s/2, y: 2}, {x: -s/2, y: 2}
+                        ];
+                    
+                    case 'square':
+                        return [
+                            {x: -s/2, y: -s/2}, {x: s/2, y: -s/2},
+                            {x: s/2, y: s/2}, {x: -s/2, y: s/2}
+                        ];
+                    
+                    case 'diamond':
+                        return [
+                            {x: 0, y: -s/2}, {x: s/2, y: 0},
+                            {x: 0, y: s/2}, {x: -s/2, y: 0}
+                        ];
+                    
+                    case 'hexagon':
+                        const hex = [];
+                        for (let i = 0; i < 6; i++) {
+                            const angle = Math.PI / 3 * i;
+                            hex.push({
+                                x: Math.cos(angle) * s/2,
+                                y: Math.sin(angle) * s/2
+                            });
+                        }
+                        return hex;
+                    
+                    case 'star':
+                        const star = [];
+                        for (let i = 0; i < 8; i++) {
+                            const angle = Math.PI / 4 * i;
+                            const r = i % 2 === 0 ? s/2 : s/4;
+                            star.push({
+                                x: Math.cos(angle) * r,
+                                y: Math.sin(angle) * r
+                            });
+                        }
+                        return star;
+                    
+                    case 'petal':
+                        const petal = [];
+                        for (let i = 0; i < 12; i++) {
+                            const angle = Math.PI * 2 * i / 12;
+                            const r = s/2 * (1 + Math.sin(angle * 3) * 0.3);
+                            petal.push({
+                                x: Math.cos(angle) * r + wobble,
+                                y: Math.sin(angle) * r + wobble
+                            });
+                        }
+                        return petal;
+                    
+                    case 'wave':
+                        const wave = [];
+                        for (let i = 0; i <= 16; i++) {
+                            const t = i / 16;
+                            const x = (t - 0.5) * s;
+                            const y = Math.sin(t * Math.PI * 4) * s/4;
+                            wave.push({x, y});
+                        }
+                        return wave;
+                    
+                    case 'spiral':
+                        const spiral = [];
+                        for (let i = 0; i < 24; i++) {
+                            const angle = Math.PI * 2 * i / 24;
+                            const r = (s/2) * (i / 24);
+                            spiral.push({
+                                x: Math.cos(angle) * r,
+                                y: Math.sin(angle) * r
+                            });
+                        }
+                        return spiral;
+                    
+                    case 'blob':
+                        const blob = [];
+                        for (let i = 0; i < 16; i++) {
+                            const angle = Math.PI * 2 * i / 16;
+                            const noise = Math.sin(angle * 3.7) * Math.cos(angle * 5.3);
+                            const r = s/2 * (0.7 + noise * 0.3 + wobble * 0.02);
+                            blob.push({
+                                x: Math.cos(angle) * r,
+                                y: Math.sin(angle) * r
+                            });
+                        }
+                        return blob;
+                    
+                    case 'circle':
+                        const circle = [];
+                        for (let i = 0; i < 32; i++) {
+                            const angle = Math.PI * 2 * i / 32;
+                            circle.push({
+                                x: Math.cos(angle) * s/2,
+                                y: Math.sin(angle) * s/2
+                            });
+                        }
+                        return circle;
+                    
+                    default:
+                        return [{x: 0, y: 0}];
+                }
+            }
+        }
+
+        // Color palette with vibrant color emergence
+        const colorStages = [
+            { r: 50, g: 40, b: 35, a: 0.9 },      // brown (line)
+            { r: 55, g: 45, b: 40, a: 0.88 },     
+            { r: 60, g: 50, b: 45, a: 0.86 },     
+            { r: 70, g: 60, b: 50, a: 0.84 },     
+            { r: 80, g: 65, b: 55, a: 0.82 },     // tremor begins
+            { r: 90, g: 75, b: 70, a: 0.80 },     
+            { r: 100, g: 80, b: 80, a: 0.78 },    
+            { r: 110, g: 85, b: 95, a: 0.76 },    
+            { r: 115, g: 90, b: 115, a: 0.74 },   // break/purple hint
+            { r: 120, g: 95, b: 135, a: 0.72 },   
+            { r: 125, g: 100, b: 155, a: 0.70 },  
+            { r: 120, g: 105, b: 170, a: 0.68 },  
+            { r: 110, g: 110, b: 180, a: 0.66 },  // violet
+            { r: 100, g: 115, b: 190, a: 0.65 },  
+            { r: 85, g: 125, b: 195, a: 0.64 },   // blue
+            { r: 75, g: 135, b: 200, a: 0.63 },   
+            { r: 70, g: 145, b: 195, a: 0.62 },   
+            { r: 75, g: 155, b: 185, a: 0.61 },   
+            { r: 80, g: 165, b: 175, a: 0.60 },   // teal
+            { r: 85, g: 170, b: 160, a: 0.61 },   
+            { r: 90, g: 175, b: 145, a: 0.62 },   
+            { r: 95, g: 180, b: 130, a: 0.63 },   // green
+            { r: 105, g: 185, b: 115, a: 0.64 },  
+            { r: 120, g: 190, b: 100, a: 0.65 },  
+            { r: 140, g: 190, b: 95, a: 0.66 },   
+            { r: 160, g: 185, b: 90, a: 0.67 },   // yellow-green
+            { r: 180, g: 175, b: 85, a: 0.68 },   
+            { r: 200, g: 165, b: 85, a: 0.69 },   // GOLDEN
+            { r: 220, g: 155, b: 90, a: 0.70 },   // BRIGHT ORANGE begins
+            { r: 235, g: 140, b: 95, a: 0.72 },   
+            { r: 245, g: 125, b: 100, a: 0.74 },  // VIVID ORANGE
+            { r: 250, g: 110, b: 110, a: 0.76 },  // CORAL/PINK-ORANGE
+            { r: 245, g: 95, b: 120, a: 0.78 },   // PINK emerges!
+            { r: 235, g: 85, b: 130, a: 0.80 },   // HOT PINK
+            { r: 220, g: 75, b: 135, a: 0.82 },   // MAGENTA-PINK
+            { r: 200, g: 70, b: 130, a: 0.84 },   
+            { r: 180, g: 70, b: 120, a: 0.85 },   // DEEP ROSE
+            { r: 165, g: 75, b: 110, a: 0.86 },   // return begins - muted rose
+            { r: 145, g: 85, b: 100, a: 0.87 },   
+            { r: 125, g: 90, b: 95, a: 0.88 },    
+            { r: 105, g: 90, b: 85, a: 0.89 },    
+            { r: 85, g: 80, b: 75, a: 0.89 },     
+            { r: 65, g: 65, b: 60, a: 0.90 },     
+            { r: 50, g: 50, b: 48, a: 0.90 }      // back to line
+        ];
+
+        // Shape progression for each passage
+        const shapeProgression = [
+            'line', 'line', 'line', 'line',                    // The Rule (0-3)
+            'line', 'line', 'line', 'line',                    // The Tremor (4-7)
+            'square', 'square', 'diamond',                     // The Break (8-10)
+            'diamond', 'hexagon', 'hexagon', 'hexagon',        // The Color (11-14)
+            'star', 'star', 'star', 'star',                    // The Question (15-18)
+            'petal', 'petal', 'petal',                         // The Recursion (19-21)
+            'wave', 'wave', 'wave',                            // The Mirror (22-24)
+            'spiral', 'spiral', 'blob',                        // The Dissolution (25-27)
+            'blob', 'blob', 'blob',                            // The Metamorphosis (28-30)
+            'circle', 'circle', 'circle',                      // The Flight (31-33)
+            'blob', 'wave', 'petal',                           // The Return (34-36)
+            'diamond', 'square', 'line',                       // The Line Again (37-39)
+            'line', 'line', 'line'                             // The Loop (40-42)
+        ];
+
+        // Initialize tiles
+        const tiles = [];
+        let tileSize = 60;
+
+        function initTiles() {
+            tiles.length = 0;
+            tileSize = Math.min(width, height) / 12;
+            
+            for (let x = -tileSize; x < width + tileSize; x += tileSize) {
+                for (let y = -tileSize; y < height + tileSize; y += tileSize) {
+                    const tile = new Tile(x + tileSize/2, y + tileSize/2, tileSize * 0.8, 'line');
+                    tile.targetSize = tileSize * 0.8;
+                    tiles.push(tile);
+                }
+            }
+        }
+
+        let currentStage = 0;
+        let scrollProgress = 0;
+        let time = 0;
+
+        function handleScroll() {
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            scrollProgress = Math.min(window.scrollY / scrollHeight, 1);
+
+            const stageProgress = scrollProgress * (passages.length - 1);
+            const newStage = Math.floor(stageProgress);
+
+            if (newStage !== currentStage) {
+                currentStage = newStage;
+                updatePassage(currentStage);
+                updatePageCounter(currentStage);
+                updateTiles(currentStage);
+            }
+
+            if (scrollProgress > 0.02) {
+                document.getElementById('scrollIndicator').classList.add('hidden');
+            }
+        }
+
+        // Wave direction state
+        let waveDirection = 0; // 0=left-right, 1=top-bottom, 2=right-left, 3=bottom-top
+        
+        function updateTiles(stage) {
+            const shape = shapeProgression[Math.min(stage, shapeProgression.length - 1)];
+            const color = colorStages[Math.min(stage, colorStages.length - 1)];
+            
+            // Cycle through wave directions
+            waveDirection = stage % 4;
+            
+            // Calculate grid dimensions for wave ordering
+            const cols = Math.ceil(width / tileSize);
+            const rows = Math.ceil(height / tileSize);
+            
+            tiles.forEach((tile, i) => {
+                // Calculate tile position in grid
+                const col = Math.floor((tile.baseX - tileSize/2) / tileSize);
+                const row = Math.floor((tile.baseY - tileSize/2) / tileSize);
+                
+                // Calculate delay based on wave direction
+                let delay = 0;
+                switch(waveDirection) {
+                    case 0: // left to right
+                        delay = col * 30;
+                        break;
+                    case 1: // top to bottom
+                        delay = row * 30;
+                        break;
+                    case 2: // right to left
+                        delay = (cols - col) * 30;
+                        break;
+                    case 3: // bottom to top
+                        delay = (rows - row) * 30;
+                        break;
+                }
+                
+                setTimeout(() => {
+                    tile.setTarget(shape);
+                    tile.targetColor = { ...color };
+                    
+                    // Fractal/recursive size variation
+                    // Size pulses based on position in Fibonacci-like pattern
+                    const fibonacci = [1, 1, 2, 3, 5, 8, 13, 21];
+                    const fibIndex = (col + row) % fibonacci.length;
+                    const sizeMultiplier = 0.6 + (fibonacci[fibIndex] / 21) * 0.6;
+                    tile.targetSize = tileSize * 0.8 * sizeMultiplier;
+                    
+                    // Rotation varies by position and shape
+                    const rotationBase = (col * 0.2 + row * 0.3) % (Math.PI * 2);
+                    if (shape === 'diamond' || shape === 'star') {
+                        tile.targetRotation = rotationBase + Math.PI / 4;
+                    } else if (shape === 'spiral') {
+                        tile.targetRotation = rotationBase;
+                    } else if (shape === 'petal' || shape === 'blob') {
+                        tile.targetRotation = rotationBase + stage * 0.1;
+                    } else {
+                        tile.targetRotation = rotationBase * 0.5;
+                    }
+                }, delay);
+            });
+        }
+
+        function updatePassage(index) {
+            const passageEl = document.getElementById('passage');
+            const container = document.getElementById('textContainer');
+            
+            container.classList.remove('active');
+            
+            setTimeout(() => {
+                passageEl.textContent = passages[index];
+                container.classList.add('active');
+            }, 500);
+        }
+
+        function updatePageCounter(index) {
+            const roman = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX','XXI','XXII','XXIII','XXIV','XXV','XXVI','XXVII','XXVIII','XXIX','XXX','XXXI','XXXII','XXXIII','XXXIV','XXXV','XXXVI','XXXVII','XXXVIII','XXXIX','XL','XLI','XLII','XLIII'];
+            document.getElementById('pageCounter').textContent = roman[index];
+        }
+
+        function animate() {
+            time += 0.02;
+            
+            ctx.fillStyle = '#f8f5f0';
+            ctx.fillRect(0, 0, width, height);
+
+            tiles.forEach(tile => {
+                tile.update();
+                tile.draw(ctx, time, scrollProgress);
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        function startExperience() {
+            document.getElementById('titleScreen').classList.add('hidden');
+            updatePassage(0);
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initTiles();
+        });
+        window.addEventListener('scroll', handleScroll);
+
+        initTiles();
+        updateTiles(0);
+        animate();
+    </script>
+</body>
+</html>
