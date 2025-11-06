@@ -2,6 +2,8 @@
 
 _"Constraint is not the opposite of freedom. It is its generative substrate."_
 
+Read story and interact with the 3D model here!! https://jiya-manchanda.github.io/The-Loop-Writes-Itself/loop/story.html
+
 https://www.canva.com/design/DAGl2-ppP6Y/K0k9S2ykSsJaFZpTvf3poA/view?utm_content=DAGl2-ppP6Y&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h979a8a9e4b
 
 **The Loop Writes Itself** is a visual and computational metamorphosis project set on a Möbius strip, where mathematical precision collapses into organic improvisation. It combines symbolic modeling, machine learning, and hand-drawn transformation to stage a recursive unraveling of form across a continuous surface. This project exists at the intersection of geometry and emergence, code and graphite, logic and intuition.
