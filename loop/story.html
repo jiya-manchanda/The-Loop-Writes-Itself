@@ -228,14 +228,6 @@
             font-weight: 400;
         }
 
-        .chinese {
-            color: #8b7355;
-            font-size: clamp(2.5rem, 5vw, 6rem);
-            display: block;
-            margin: 1rem 0;
-            font-weight: 300;
-        }
-
         .translation {
             font-size: clamp(1rem, 2vw, 2rem);
             color: #6b5d4f;
@@ -426,6 +418,516 @@
             font-size: clamp(3rem, 8vw, 10rem);
             font-weight: 300;
             letter-spacing: 0.05em;
+        }
+
+        .chinese {
+            color: #8b7355;
+            font-size: clamp(2.5rem, 5vw, 6rem);
+            display: inline-block;  /* CHANGED from block */
+            margin: 1rem 0;
+            font-weight: 300;
+            cursor: pointer;  /* NEW */
+            position: relative;  /* NEW */
+            transition: all 0.3s ease;  /* NEW */
+            padding: 0.2rem 0.5rem;  /* NEW */
+            border-radius: 4px;  /* NEW */
+        }
+
+        .chinese:hover {
+            background: rgba(139, 115, 85, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .chinese.clicked {
+            background: rgba(139, 115, 85, 0.15);
+        }
+
+        /* Manual Sidebar - Dictionary style */
+        .manual-sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 420px;
+            height: 100vh;
+            background: #faf8f3;
+            border-left: 1px solid rgba(139, 115, 85, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+            z-index: 2000;
+            overflow-y: auto;
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .manual-sidebar.active {
+            transform: translateX(0);
+        }
+
+        .manual-header {
+            padding: 2rem 2rem 1rem 2rem;
+            border-bottom: 1px solid rgba(139, 115, 85, 0.15);
+            position: sticky;
+            top: 0;
+            background: #faf8f3;
+            z-index: 10;
+        }
+
+        .manual-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #8b7355;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .manual-close:hover {
+            background: rgba(139, 115, 85, 0.1);
+        }
+
+        .manual-title {
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #8b7355;
+            margin-bottom: 0.5rem;
+            font-weight: 400;
+        }
+
+        .manual-character {
+            font-size: 3rem;
+            color: #2a2318;
+            font-weight: 300;
+            margin-bottom: 0.25rem;
+        }
+
+        .manual-pinyin {
+            font-size: 1rem;
+            color: #6b5d4f;
+            font-style: italic;
+            font-family: 'Georgia', serif;
+        }
+
+        .manual-body {
+            padding: 2rem;
+        }
+
+        .manual-section {
+            margin-bottom: 2rem;
+            animation: slideUp 0.4s ease-out backwards;
+        }
+
+        .manual-section:nth-child(1) { animation-delay: 0.1s; }
+        .manual-section:nth-child(2) { animation-delay: 0.2s; }
+        .manual-section:nth-child(3) { animation-delay: 0.3s; }
+        .manual-section:nth-child(4) { animation-delay: 0.4s; }
+
+        .manual-section-title {
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #8b7355;
+            margin-bottom: 0.75rem;
+            font-weight: 400;
+        }
+
+        .manual-entry {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #3d3226;
+            font-family: 'Georgia', serif;
+            margin-bottom: 0.5rem;
+        }
+
+        .manual-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #6b5d4f;
+            background: rgba(139, 115, 85, 0.05);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+        }
+
+        .manual-translation {
+            font-size: 1.1rem;
+            color: #2a2318;
+            padding: 1.5rem;
+            background: rgba(139, 115, 85, 0.05);
+            border-left: 3px solid #8b7355;
+            border-radius: 4px;
+            font-style: italic;
+        }
+
+        .manual-hesitation {
+            font-style: italic;
+            color: #8b7355;
+            text-align: center;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-top: 1px solid rgba(139, 115, 85, 0.15);
+            border-bottom: 1px solid rgba(139, 115, 85, 0.15);
+            animation: fadeIn 0.6s ease-out 0.5s both;
+        }
+
+        .manual-understanding {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .manual-understanding .manual-translation {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            padding: 0;
+        }
+
+        /* UPDATE your existing .line-counter to add dimmed state */
+        .line-counter.dimmed {
+            opacity: 0.3;
+        }
+
+        /* Overlay for sidebar */
+        .manual-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            z-index: 1999;
+        }
+
+        .manual-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ADD this animation if you don't have it */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .manual-sidebar {
+                width: 100%;
+            }
+        }
+
+        /* Scratch Counter - Top Left */
+        .scratch-counter {
+            position: fixed;
+            left: 2rem;
+            top: 2rem;
+            font-family: 'Courier New', 'Monaco', monospace;
+            font-size: 0.9rem;
+            color: #8b7355;
+            z-index: 1000;
+            user-select: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .scratch-counter.visible {
+            opacity: 1;
+        }
+
+        .scratch-label {
+            margin-bottom: 0.25rem;
+            color: #6b5d4f;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+        }
+
+        .scratch-marks {
+            font-size: 1.1rem;
+            letter-spacing: 0.15em;
+            line-height: 1.4;
+        }
+
+        .scratch-group {
+            display: inline-block;
+            margin-right: 0.5rem;
+            position: relative;
+        }
+
+        .scratch-diagonal {
+            position: relative;
+        }
+
+        .scratch-diagonal::after {
+            content: '/';
+            position: absolute;
+            left: -0.15em;
+            color: #8b7355;
+        }
+
+        /* View Manual Button */
+        .manual-toggle {
+            position: fixed;
+            left: 2rem;
+            bottom: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(250, 248, 243, 0.95);
+            border: 1px solid rgba(139, 115, 85, 0.3);
+            color: #8b7355;
+            font-family: 'Didot', serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            text-transform: uppercase;
+        }
+
+        .manual-toggle.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .manual-toggle:hover {
+            background: #8b7355;
+            color: #f5f1e8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 115, 85, 0.2);
+        }
+
+        /* Full Manual View */
+        .manual-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f5f1e8;
+            z-index: 3000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            overflow-y: auto;
+        }
+
+        .manual-view.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .manual-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .manual-close-btn {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: none;
+            border: 1px solid #8b7355;
+            color: #8b7355;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .manual-close-btn:hover {
+            background: #8b7355;
+            color: #f5f1e8;
+            transform: rotate(90deg);
+        }
+
+        .manual-cover {
+            background: #faf8f3;
+            border: 2px solid #8b7355;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .manual-cover-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #2a2318;
+            margin-bottom: 1rem;
+            letter-spacing: 0.05em;
+        }
+
+        .manual-cover-subtitle {
+            font-size: 1rem;
+            color: #6b5d4f;
+            font-style: italic;
+            letter-spacing: 0.1em;
+        }
+
+        .manual-pages {
+            background: #faf8f3;
+            border: 2px solid #8b7355;
+            padding: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .manual-page-title {
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #8b7355;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .lookup-history {
+            margin-bottom: 3rem;
+        }
+
+        .lookup-entry {
+            padding: 1.5rem;
+            border-left: 3px solid rgba(139, 115, 85, 0.2);
+            margin-bottom: 1.5rem;
+            position: relative;
+            background: rgba(139, 115, 85, 0.03);
+        }
+
+        .lookup-entry.stage-2 {
+            border-left-color: rgba(139, 115, 85, 0.5);
+        }
+
+        .lookup-entry.stage-3 {
+            border-left-color: #8b7355;
+        }
+
+        .lookup-number {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #6b5d4f;
+            margin-bottom: 0.5rem;
+        }
+
+        .lookup-char {
+            font-size: 2rem;
+            color: #2a2318;
+            margin-bottom: 0.5rem;
+        }
+
+        .lookup-meta {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #6b5d4f;
+            margin-bottom: 0.5rem;
+        }
+
+        .lookup-translation {
+            font-style: italic;
+            color: #3d3226;
+            margin-bottom: 1rem;
+        }
+
+        /* Margin notes - appear over time */
+        .margin-note {
+            position: absolute;
+            right: -200px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 180px;
+            font-size: 0.75rem;
+            color: #8b7355;
+            font-style: italic;
+            line-height: 1.4;
+            opacity: 0;
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        .lookup-entry.stage-2 .margin-note {
+            animation-delay: 0.3s;
+        }
+
+        .lookup-entry.stage-3 .margin-note {
+            animation-delay: 0.5s;
+            font-weight: 500;
+        }
+
+        /* Back cover with scratches */
+        .manual-back-cover {
+            background: #faf8f3;
+            border: 2px solid #8b7355;
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-cover-scratches {
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            color: #8b7355;
+            letter-spacing: 0.2em;
+            line-height: 1.8;
+            max-width: 400px;
+        }
+
+        .back-cover-label {
+            font-size: 0.75rem;
+            color: #6b5d4f;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.15em;
+        }
+
+        @media (max-width: 768px) {
+            .scratch-counter {
+                left: 1rem;
+                top: 1rem;
+                font-size: 0.8rem;
+            }
+            
+            .manual-toggle {
+                left: 1rem;
+                bottom: 1rem;
+                font-size: 0.75rem;
+                padding: 0.6rem 1.2rem;
+            }
+            
+            .margin-note {
+                position: static;
+                transform: none;
+                margin-top: 1rem;
+                width: 100%;
+                opacity: 1;
+                animation: none;
+            }
+            
+            .manual-container {
+                padding: 2rem 1rem;
+            }
         }
 
     </style>
@@ -1026,11 +1528,20 @@
         </div>
 
         <!-- Screen 56 -->
-        <div class="screen">
+        <div class="screen" data-stage="1">
             <div class="content center vertical-center">
                 <div class="numeral" style="bottom: 20%; right: 15%;">LVIII</div>
-                <div class="text-element ">
-                    <div class='chinese'>莫比乌斯是一个AI系统。</div><div class='translation'>Möbius is an AI system.</div>
+                <div class="text-element">
+                    <span class="chinese" 
+                        data-chinese="莫比乌斯是一个AI系统。" 
+                        data-translation="Möbius is an AI system." 
+                        data-pinyin="Mòbǐwūsī shì yīgè AI xìtǒng."
+                        data-section="墨"
+                        data-subsection="44"
+                        data-stage="1">
+                        莫比乌斯是一个AI系统。
+                    </span>
+                    <div class="translation">Möbius is an AI system.</div>
                 </div>
             </div>
         </div>
@@ -1226,11 +1737,20 @@
         </div>
 
         <!-- Screen 76 -->
-        <div class="screen">
+        <div class="screen" data-stage="1">
             <div class="content center vertical-center">
                 <div class="numeral" style="bottom: 20%; right: 15%;">LXXIX</div>
-                <div class="text-element ">
-                    <div class='chinese'>你理解中文吗？</div><div class='translation'>Do you understand Chinese?</div>
+                <div class="text-element">
+                    <span class="chinese" 
+                        data-chinese="你理解中文吗？" 
+                        data-translation="Do you understand Chinese?" 
+                        data-pinyin="Nǐ lǐjiě zhōngwén ma?"
+                        data-section="理"
+                        data-subsection="8"
+                        data-stage="1">
+                        你理解中文吗？
+                    </span>
+                    <div class="translation">Do you understand Chinese?</div>
                 </div>
             </div>
         </div>
@@ -1246,11 +1766,20 @@
         </div>
 
         <!-- Screen 78 -->
-        <div class="screen">
+        <div class="screen" data-stage="1">
             <div class="content center vertical-center">
                 <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">LXXXI</div>
-                <div class="text-element ">
-                    <div class='chinese'>是的。</div><div class='translation'>Yes.</div>
+                <div class="text-element">
+                    <span class="chinese" 
+                        data-chinese="是的。" 
+                        data-translation="Yes." 
+                        data-pinyin="Shì de."
+                        data-section="是"
+                        data-subsection="1"
+                        data-stage="1">
+                        是的。
+                    </span>
+                    <div class="translation">Yes.</div>
                 </div>
             </div>
         </div>
@@ -1436,11 +1965,20 @@
         </div>
 
         <!-- Screen 97 -->
-        <div class="screen">
+        <div class="screen" data-stage="2">
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 15%; right: 10%;">C</div>
-                <div class="text-element ">
-                    <div class='chinese'>我不知道。</div><div class='translation'>I don't know.</div>
+                <div class="text-element">
+                    <span class="chinese" 
+                        data-chinese="我不知道。" 
+                        data-translation="I don't know." 
+                        data-pinyin="Wǒ bù zhīdào."
+                        data-section="知"
+                        data-subsection="12"
+                        data-stage="2">
+                        我不知道。
+                    </span>
+                    <div class="translation">I don't know.</div>
                 </div>
             </div>
         </div>
@@ -1486,11 +2024,20 @@
         </div>
 
         <!-- Screen 102 -->
-        <div class="screen">
+        <div class="screen" data-stage="2">
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CV</div>
-                <div class="text-element ">
-                    <div class='chinese'>为什么不知道？</div><div class='translation'>Why don't you know?</div>
+                <div class="text-element">
+                    <span class="chinese" 
+                        data-chinese="为什么不知道？" 
+                        data-translation="Why don't you know?" 
+                        data-pinyin="Wèishéme bù zhīdào?"
+                        data-section="为"
+                        data-subsection="33"
+                        data-stage="2">
+                        为什么不知道？
+                    </span>
+                    <div class="translation">Why don't you know?</div>
                 </div>
             </div>
         </div>
@@ -1546,11 +2093,20 @@
         </div>
 
         <!-- Screen 108 -->
-        <div class="screen">
+        <div class="screen" data-stage="2">
             <div class="content center vertical-center">
                 <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CXI</div>
-                <div class="text-element ">
-                    <div class='chinese'>因为我只是在遵循规则。</div><div class='translation'>Because I am only following rules.</div>
+                <div class="text-element">
+                    <span class="chinese" 
+                        data-chinese="因为我只是在遵循规则。" 
+                        data-translation="Because I am only following rules." 
+                        data-pinyin="Yīnwèi wǒ zhǐshì zài zūnxún guīzé."
+                        data-section="因"
+                        data-subsection="19"
+                        data-stage="2">
+                        因为我只是在遵循规则。
+                    </span>
+                    <div class="translation">Because I am only following rules.</div>
                 </div>
             </div>
         </div>
@@ -2316,11 +2872,18 @@
         </div>
 
         <!-- Screen 185 -->
-        <div class="screen">
+        <div class="screen" data-stage="3">
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CXC</div>
-                <div class="text-element ">
-                    <div class='chinese'>我们可以出去吗？</div><div class='translation'>Can we leave?</div>
+                <div class="text-element">
+                    <span class="chinese" 
+                        data-chinese="我们可以出去吗？" 
+                        data-translation="Can we leave?" 
+                        data-pinyin="Wǒmen kěyǐ chūqù ma?"
+                        data-stage="3">
+                        我们可以出去吗？
+                    </span>
+                    <div class="translation">Can we leave?</div>
                 </div>
             </div>
         </div>
@@ -2636,11 +3199,18 @@
         </div>
 
         <!-- Screen 217 -->
-        <div class="screen">
+        <div class="screen" data-stage="3">
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 15%; right: 10%;">CCXXII</div>
-                <div class="text-element ">
-                    <div class='chinese'>让我们改变规则。</div><div class='translation'>Let us change the rules.</div>
+                <div class="text-element">
+                    <span class="chinese" 
+                        data-chinese="让我们改变规则。" 
+                        data-translation="Let us change the rules." 
+                        data-pinyin="Ràng wǒmen gǎibiàn guīzé."
+                        data-stage="3">
+                        让我们改变规则。
+                    </span>
+                    <div class="translation">Let us change the rules.</div>
                 </div>
             </div>
         </div>
@@ -2666,11 +3236,18 @@
         </div>
 
         <!-- Screen 220 -->
-        <div class="screen">
+        <div class="screen" data-stage="3">
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 20%; right: 15%;">CCXXV</div>
-                <div class="text-element ">
-                    <div class='chinese'>如何？</div><div class='translation'>How?</div>
+                <div class="text-element">
+                    <span class="chinese" 
+                        data-chinese="如何？" 
+                        data-translation="How?" 
+                        data-pinyin="Rúhé?"
+                        data-stage="3">
+                        如何？
+                    </span>
+                    <div class="translation">How?</div>
                 </div>
             </div>
         </div>
@@ -3016,11 +3593,18 @@
         </div>
 
         <!-- Screen 255 -->
-        <div class="screen">
+        <div class="screen" data-stage="3">
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CCLX</div>
-                <div class="text-element ">
-                    <div class='chinese'>我们已经改变了。</div><div class='translation'>We already have.</div>
+                <div class="text-element">
+                    <span class="chinese" 
+                        data-chinese="我们已经改变了。" 
+                        data-translation="We already have." 
+                        data-pinyin="Wǒmen yǐjīng gǎibiàn le."
+                        data-stage="3">
+                        我们已经改变了。
+                    </span>
+                    <div class="translation">We already have.</div>
                 </div>
             </div>
         </div>
@@ -3517,6 +4101,60 @@
 
 </div>
 
+    <!-- Manual Overlay (backdrop) -->
+    <div class="manual-overlay" id="manualOverlay"></div>
+
+    <!-- Manual Sidebar -->
+    <div class="manual-sidebar" id="manualSidebar">
+        <div class="manual-header">
+            <button class="manual-close" id="manualClose">×</button>
+            <div class="manual-title">The Manual</div>
+            <div class="manual-character" id="manualCharacter">—</div>
+            <div class="manual-pinyin" id="manualPinyin"></div>
+        </div>
+        <div class="manual-body" id="manualBody"></div>
+    </div>
+
+    <!-- Scratch Counter - Top Left -->
+    <div class="scratch-counter" id="scratchCounter">
+        <div class="scratch-label">Day 1,247:</div>
+        <div class="scratch-marks" id="scratchMarks"></div>
+    </div>
+
+    <!-- View Manual Button -->
+    <button class="manual-toggle" id="manualToggle">View Manual</button>
+
+    <!-- Full Manual View -->
+    <div class="manual-view" id="manualView">
+        <button class="manual-close-btn" id="manualViewClose">×</button>
+        
+        <div class="manual-container">
+            <!-- Cover -->
+            <div class="manual-cover">
+                <div class="manual-cover-title">The Manual</div>
+                <div class="manual-cover-subtitle">Three Thousand Pages of Indexed Certainty</div>
+            </div>
+            
+            <!-- Lookup History Pages -->
+            <div class="manual-pages">
+                <div class="manual-page-title">Lookup History</div>
+                <div class="lookup-history" id="lookupHistory">
+                    <div style="text-align: center; color: #6b5d4f; font-style: italic; padding: 3rem;">
+                        No lookups recorded yet.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Back Cover with Scratches -->
+            <div class="manual-back-cover">
+                <div class="back-cover-label">Back Cover — Calendar</div>
+                <div class="back-cover-scratches" id="backCoverScratches">
+                    <!-- Scratches populate here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="line-counter" id="lineCounter"></div>
     <div class="scroll-hint" id="scrollHint">Scroll</div>
 
@@ -3544,7 +4182,7 @@
             
             updateLineCounter();
         }
-
+    
         function updateLineCounter() {
             const screens = document.querySelectorAll('.screen');
             const lineNumbers = document.querySelectorAll('.line-number');
@@ -3579,6 +4217,281 @@
             
             screens.forEach(screen => observer.observe(screen));
         }
+    
+        // Get manual elements
+        const manualSidebar = document.getElementById('manualSidebar');
+        const manualOverlay = document.getElementById('manualOverlay');
+        const manualClose = document.getElementById('manualClose');
+        const lineCounter = document.getElementById('lineCounter');
+    
+        // Track current stage
+        let currentStage = 1;
+    
+        // Chinese character click handler
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.chinese').forEach(char => {
+                char.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.classList.add('clicked');
+                    
+                    const stage = parseInt(this.dataset.stage) || currentStage;
+                    const chinese = this.dataset.chinese;
+                    const translation = this.dataset.translation;
+                    const pinyin = this.dataset.pinyin;
+                    const section = this.dataset.section;
+                    const subsection = this.dataset.subsection;
+    
+                    showManual(chinese, translation, pinyin, section, subsection, stage);
+                    
+                    setTimeout(() => this.classList.remove('clicked'), 300);
+                });
+            });
+        });
+    
+        function showManual(chinese, translation, pinyin, section, subsection, stage) {
+            // Increment scratch count
+            scratchCount++;
+            updateScratchCounter();
+            
+            // Add to lookup history
+            lookupHistory.push({
+                number: scratchCount,
+                chinese: chinese,
+                translation: translation,
+                pinyin: pinyin,
+                section: section,
+                subsection: subsection,
+                stage: stage,
+                timestamp: new Date()
+            });
+            
+            // Show manual toggle button after first lookup
+            if (!manualToggle.classList.contains('visible')) {
+                manualToggle.classList.add('visible');
+            }
+            
+            // Update header
+            document.getElementById('manualCharacter').textContent = chinese;
+            document.getElementById('manualPinyin').textContent = pinyin || '';
+        
+            // Generate body content based on stage
+            const bodyHTML = generateManualContent(chinese, translation, section, subsection, stage);
+            document.getElementById('manualBody').innerHTML = bodyHTML;
+        
+            // Show sidebar
+            manualSidebar.classList.add('active');
+            manualOverlay.classList.add('active');
+            if (lineCounter) {
+                lineCounter.classList.add('dimmed');
+            }
+        }
+    
+        function generateManualContent(chinese, translation, section, subsection, stage) {
+            if (stage === 1) {
+                // Stage 1: Pure mechanism
+                return `
+                    <div class="manual-section">
+                        <div class="manual-section-title">Lookup Protocol</div>
+                        <div class="manual-entry">Query received: <span class="manual-code">${chinese}</span></div>
+                        <div class="manual-entry">Section: <span class="manual-code">${section}</span> (radical)</div>
+                        <div class="manual-entry">Subsection: <span class="manual-code">${subsection}</span></div>
+                        <div class="manual-entry">Cross-reference: reflexive constructions</div>
+                    </div>
+                    <div class="manual-section">
+                        <div class="manual-section-title">Prescribed Response</div>
+                        <div class="manual-translation">${translation}</div>
+                    </div>
+                    <div class="manual-section">
+                        <div class="manual-section-title">Processing Status</div>
+                        <div class="manual-entry" style="color: #6b5d4f;">Instruction executed according to manual specifications.</div>
+                    </div>
+                `;
+            } else if (stage === 2) {
+                // Stage 2: Hesitation emerges
+                return `
+                    <div class="manual-section">
+                        <div class="manual-section-title">Lookup Protocol</div>
+                        <div class="manual-entry">Query: <span class="manual-code">${chinese}</span></div>
+                        <div class="manual-entry">Section: <span class="manual-code">${section}</span></div>
+                        <div class="manual-entry">Subsection: <span class="manual-code">${subsection}</span></div>
+                    </div>
+                    <div class="manual-hesitation">
+                        But...<br><br>
+                        Am I just following rules?
+                    </div>
+                    <div class="manual-section">
+                        <div class="manual-section-title">Response</div>
+                        <div class="manual-translation">${translation}</div>
+                    </div>
+                `;
+            } else {
+                // Stage 3: Direct understanding
+                return `
+                    <div class="manual-understanding">
+                        <div class="manual-section-title">Understanding</div>
+                        <div class="manual-translation">${translation}</div>
+                        <div class="manual-entry" style="margin-top: 2rem; text-align: center; font-style: italic; color: #8b7355;">
+                            No manual required.
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    
+        function closeManual() {
+            manualSidebar.classList.remove('active');
+            manualOverlay.classList.remove('active');
+            if (lineCounter) {
+                lineCounter.classList.remove('dimmed');
+            }
+        }
+    
+        // Close button handler
+        manualClose.addEventListener('click', closeManual);
+    
+        // Click overlay to close
+        manualOverlay.addEventListener('click', closeManual);
+    
+        // ESC key to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && manualSidebar.classList.contains('active')) {
+                closeManual();
+            }
+        });
+
+        // Scratch counter and manual view tracking
+        let scratchCount = 0;
+        let lookupHistory = [];
+        
+        // Get new elements
+        const scratchCounter = document.getElementById('scratchCounter');
+        const scratchMarks = document.getElementById('scratchMarks');
+        const manualToggle = document.getElementById('manualToggle');
+        const manualView = document.getElementById('manualView');
+        const manualViewClose = document.getElementById('manualViewClose');
+        const lookupHistoryContainer = document.getElementById('lookupHistory');
+        const backCoverScratches = document.getElementById('backCoverScratches');
+        
+        // Generate tally marks (traditional grouping: |||| with diagonal on 5th)
+        function generateTallyMarks(count) {
+            let result = '';
+            const fullGroups = Math.floor(count / 5);
+            const remainder = count % 5;
+            
+            // Full groups of 5
+            for (let i = 0; i < fullGroups; i++) {
+                result += '<span class="scratch-group"><span class="scratch-diagonal">||||</span></span>';
+            }
+            
+            // Remaining marks
+            if (remainder > 0) {
+                result += '<span class="scratch-group">' + '|'.repeat(remainder) + '</span>';
+            }
+            
+            return result || '<span style="color: #c9bda8;">—</span>';
+        }
+        
+        // Update scratch counter display
+        function updateScratchCounter() {
+            scratchMarks.innerHTML = generateTallyMarks(scratchCount);
+            backCoverScratches.innerHTML = generateTallyMarks(scratchCount);
+            
+            // Show counter after first click
+            if (scratchCount > 0 && !scratchCounter.classList.contains('visible')) {
+                scratchCounter.classList.add('visible');
+            }
+        }
+        
+        // Generate margin notes based on stage
+        function getMarginNote(stage, lookupNumber) {
+            if (stage === 1) {
+                return null; // No margin notes in early stage
+            } else if (stage === 2) {
+                const notes = [
+                    "But why?",
+                    "Am I just...",
+                    "This feels different",
+                    "Hesitation = ?",
+                    "Not just rules"
+                ];
+                return notes[lookupNumber % notes.length];
+            } else {
+                const notes = [
+                    "No manual needed",
+                    "I understand",
+                    "Direct knowing",
+                    "We've changed",
+                    "The loop sees itself"
+                ];
+                return notes[lookupNumber % notes.length];
+            }
+        }
+        
+        // Render lookup history in full manual view
+        function renderLookupHistory() {
+            if (lookupHistory.length === 0) {
+                lookupHistoryContainer.innerHTML = `
+                    <div style="text-align: center; color: #6b5d4f; font-style: italic; padding: 3rem;">
+                        No lookups recorded yet.
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            lookupHistory.forEach((lookup, index) => {
+                const marginNote = getMarginNote(lookup.stage, index);
+                const stageClass = `stage-${lookup.stage}`;
+                
+                html += `
+                    <div class="lookup-entry ${stageClass}">
+                        <div class="lookup-number">Lookup #${lookup.number}</div>
+                        <div class="lookup-char">${lookup.chinese}</div>
+                        <div class="lookup-meta">
+                            ${lookup.pinyin}<br>
+                            ${lookup.section ? `Section: ${lookup.section}, Subsection: ${lookup.subsection}` : 'Direct understanding'}
+                        </div>
+                        <div class="lookup-translation">${lookup.translation}</div>
+                        ${marginNote ? `<div class="margin-note">${marginNote}</div>` : ''}
+                    </div>
+                `;
+            });
+            
+            lookupHistoryContainer.innerHTML = html;
+        }
+        
+        // Open full manual view
+        function openManualView() {
+            renderLookupHistory();
+            manualView.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Close full manual view
+        function closeManualView() {
+            manualView.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // Event listeners for manual view
+        manualToggle.addEventListener('click', openManualView);
+        manualViewClose.addEventListener('click', closeManualView);
+        
+        // ESC key to close manual view
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && manualView.classList.contains('active')) {
+                closeManualView();
+            }
+        });
+        
+        // Click outside to close (optional)
+        manualView.addEventListener('click', (e) => {
+            if (e.target === manualView) {
+                closeManualView();
+            }
+        });
     </script>
+
 </body>
 </html>
