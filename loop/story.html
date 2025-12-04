@@ -36,126 +36,376 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            background: radial-gradient(circle at 30% 50%, #f9f6f0 0%, #ebe3d5 100%);
+            background: 
+                linear-gradient(to bottom, 
+                    rgba(250, 248, 243, 0) 0%,
+                    rgba(235, 227, 213, 0.3) 50%,
+                    rgba(250, 248, 243, 0) 100%),
+                radial-gradient(ellipse at center, #faf8f3 0%, #ebe3d5 100%);
             position: relative;
             scroll-snap-align: start;
             scroll-snap-stop: always;
-            padding: 2vh 2rem;
-            overflow: hidden;
-            gap: 3rem;
-        }
-
-        .landing-top {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            flex-shrink: 0;
-            gap: 0.5rem;  /* ADD THIS - space between title and subtitle */
-        }
-
-        .landing-middle {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            flex: 0 1 auto;
-            min-height: 0;
-            margin: 1rem 0;  /* ADD THIS - adds breathing room around model */
-        }
-
-        .landing-bottom {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;  /* INCREASE from 1rem to 1.5rem */
-            width: 100%;
-            flex-shrink: 0;
-        }
-
-        .mv-frame {
-            width: 100%;
-            max-width: 350px;
-            aspect-ratio: 1;
-            background: rgba(235, 227, 213, 0.3);
-            border-radius: 4px;
+            padding: 4rem 2rem;
             overflow: hidden;
         }
 
-        model-viewer {
+        .landing::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1px;
+            height: 15%;
+            background: linear-gradient(to bottom, 
+                transparent 0%, 
+                rgba(139, 115, 85, 0.15) 50%, 
+                transparent 100%);
+        }
+
+        .landing::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1px;
+            height: 15%;
+            background: linear-gradient(to bottom, 
+                transparent 0%, 
+                rgba(139, 115, 85, 0.15) 50%, 
+                transparent 100%);
+        }
+
+        .landing-content {
+            max-width: 800px;
             width: 100%;
-            height: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ornament-top {
+            width: 120px;
+            height: 1px;
+            background: #8b7355;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .ornament-top::before,
+        .ornament-top::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            border: 1px solid #8b7355;
+            border-radius: 50%;
+            transform: translateY(-50%);
+        }
+
+        .ornament-top::before {
+            left: -4px;
+        }
+
+        .ornament-top::after {
+            right: -4px;
         }
 
         .title {
-            font-size: clamp(2rem, 6vw, 4.5rem);
+            font-size: clamp(2.8rem, 7vw, 5.2rem);
             font-weight: 300;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
+            letter-spacing: 0.08em;
             color: #2a2318;
-            line-height: 1.1;
-            animation: fadeInUp 2s ease-out;
+            line-height: 1.25;
+            margin-bottom: 0.5rem;
+            font-family: 'Didot', 'Bodoni MT', 'Playfair Display', serif;
         }
 
         .title-line {
             display: block;
         }
 
-        /* Landing subtitle + author styling */
-        .subtitle {
-            font-style: italic;
-            font-size: clamp(0.9rem, 1.8vw, 1.2rem);
-            color: #6b5d4f;
-            letter-spacing: 0.03em;
-            margin-bottom: 0;
+        .title-line:first-child {
+            font-size: 0.85em;
+            letter-spacing: 0.15em;
         }
 
-        .author {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-            color: #3d3226;
+        .title-line:last-child {
+            font-size: 1em;
+            font-style: italic;
+            letter-spacing: 0.05em;
+            margin-top: -0.2em;
+        }
+
+        .ornament-mid {
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(to right, 
+                transparent 0%, 
+                #8b7355 20%, 
+                #8b7355 80%, 
+                transparent 100%);
+            margin: 1.5rem auto;
+            position: relative;
+        }
+
+        .ornament-mid::after {
+            content: '◆';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: #8b7355;
+            background: #faf8f3;
+            padding: 0 0.5rem;
+            font-size: 0.6rem;
+        }
+
+        .subtitle {
+            font-style: italic;
+            font-size: clamp(1.15rem, 2.3vw, 1.6rem);
+            color: #6b5d4f;
+            letter-spacing: 0.03em;
+            margin-bottom: 2.5rem;
+            font-weight: 300;
+            line-height: 1.6;
+        }
+
+        .author-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem 0;
+            border-top: 1px solid rgba(139, 115, 85, 0.2);
+            border-bottom: 1px solid rgba(139, 115, 85, 0.2);
         }
 
         .author-label {
-        font-size: 0.8rem;
-        letter-spacing: 0.25em;
-        text-transform: uppercase;
-        color: #8b7355;         /* matches your accent color */
+            font-size: 0.7rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: #8b7355;
+            font-weight: 400;
+            margin-bottom: 0.75rem;
+            display: block;
         }
 
         .author-name {
-        font-size: clamp(1rem, 2vw, 1.15rem);
-        letter-spacing: 0.04em;
-        font-weight: 400;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            letter-spacing: 0.08em;
+            font-weight: 400;
+            color: #3d3226;
         }
 
-        @media (max-width: 768px) {
-        .subtitle { margin-top: -1.2rem; margin-bottom: 1rem; }
-        .author { margin-bottom: 2.25rem; }
+        .ornament-bottom {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .ornament-bottom::before,
+        .ornament-bottom::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            border: 1px solid rgba(139, 115, 85, 0.3);
+        }
+
+        .ornament-bottom::before {
+            width: 40px;
+            height: 40px;
+        }
+
+        .ornament-bottom::after {
+            width: 28px;
+            height: 28px;
         }
 
         .start-button {
-            padding: 1rem 3rem;
-            font-size: 0.85rem;
+            padding: 1.2rem 4rem;
+            font-size: 0.75rem;
             background: transparent;
-            border: 1px solid #8b7355;
+            border: 1.5px solid #8b7355;
             color: #8b7355;
             cursor: pointer;
-            letter-spacing: 0.3em;
-            transition: all 0.5s ease;
+            letter-spacing: 0.4em;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             text-transform: uppercase;
             font-family: 'Didot', serif;
-            animation: fadeIn 2s ease-out 1s both;
+            font-weight: 400;
             position: relative;
             overflow: hidden;
         }
 
+        .start-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #8b7355;
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: -1;
+        }
+
+        .start-button:hover::before {
+            left: 0;
+        }
+
         .start-button:hover {
+            color: #f5f1e8;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 115, 85, 0.25);
+        }
+
+        .corner-ornament {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            opacity: 0.15;
+        }
+
+        .corner-ornament::before,
+        .corner-ornament::after {
+            content: '';
+            position: absolute;
+            background: #8b7355;
+        }
+
+        .corner-ornament::before {
+            width: 60px;
+            height: 1px;
+        }
+
+        .corner-ornament::after {
+            width: 1px;
+            height: 60px;
+        }
+
+        .corner-ornament.top-left {
+            top: 3rem;
+            left: 3rem;
+        }
+
+        .corner-ornament.top-left::before {
+            top: 0;
+            left: 0;
+        }
+
+        .corner-ornament.top-left::after {
+            top: 0;
+            left: 0;
+        }
+
+        .corner-ornament.top-right {
+            top: 3rem;
+            right: 3rem;
+        }
+
+        .corner-ornament.top-right::before {
+            top: 0;
+            right: 0;
+        }
+
+        .corner-ornament.top-right::after {
+            top: 0;
+            right: 0;
+        }
+
+        .corner-ornament.bottom-left {
+            bottom: 3rem;
+            left: 3rem;
+        }
+
+        .corner-ornament.bottom-left::before {
+            bottom: 0;
+            left: 0;
+        }
+
+        .corner-ornament.bottom-left::after {
+            bottom: 0;
+            left: 0;
+        }
+
+        .corner-ornament.bottom-right {
+            bottom: 3rem;
+            right: 3rem;
+        }
+
+        .corner-ornament.bottom-right::before {
+            bottom: 0;
+            right: 0;
+        }
+
+        .corner-ornament.bottom-right::after {
+            bottom: 0;
+            right: 0;
+        }
+
+        @media (max-width: 768px) {
+            .corner-ornament {
+                display: none;
+            }
+            
+            .landing-content {
+                padding: 0 1rem;
+            }
+        }
+
+        /* Full Screen Model Page */
+        .model-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #f5f1e8;
+            z-index: 9999;
+        }
+
+        .model-screen.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .model-viewer-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .model-continue {
+            position: absolute;
+            bottom: 4rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1.1rem 3.5rem;
+            font-size: 0.8rem;
+            background: rgba(250, 248, 243, 0.95);
+            border: 1.5px solid #8b7355;
+            color: #8b7355;
+            cursor: pointer;
+            letter-spacing: 0.35em;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-family: 'Didot', serif;
+            font-weight: 400;
+            backdrop-filter: blur(10px);
+        }
+
+        .model-continue:hover {
             background: #8b7355;
             color: #f5f1e8;
-            letter-spacing: 0.4em;
+            transform: translateX(-50%) translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 115, 85, 0.2);
         }
 
         .story-container {
@@ -172,7 +422,7 @@
             justify-content: center;
             align-items: center;
             padding: 4rem;
-            padding-right: 8rem;
+            padding-left: 8rem;
             position: relative;
             opacity: 0;
             transition: opacity 1.2s ease;
@@ -190,7 +440,6 @@
             position: relative;
         }
 
-        /* Roman Numerals */
         .numeral {
             position: absolute;
             font-size: clamp(8rem, 20vw, 18rem);
@@ -235,7 +484,6 @@
             margin-top: 0.5rem;
         }
 
-        /* Specific Layouts */
         .center {
             text-align: center;
         }
@@ -246,7 +494,7 @@
 
         .right {
             text-align: right;
-            padding-right: 2rem;
+            padding-left: 2rem;
         }
 
         .split {
@@ -299,7 +547,7 @@
 
         .line-counter {
             position: fixed;
-            right: 2rem;
+            left: 2rem;
             top: 2rem;
             bottom: 2rem;
             display: flex;
@@ -312,35 +560,42 @@
             user-select: none;
             overflow-y: auto;
             overflow-x: hidden;
-            padding-right: 0.5rem;
+            padding-left: 0.5rem;
             max-height: calc(100vh - 4rem);
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
 
         .line-counter::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
+            display: none;
         }
 
         .line-number {
             color: #c9bda8;
-            text-align: right;
+            text-align: left;
             padding: 0.1rem 0.5rem;
             cursor: pointer;
             transition: all 0.2s ease;
             min-width: 2.5rem;
             flex-shrink: 0;
+            border-radius: 3px;
         }
 
         .line-number:hover {
             color: #8b7355;
-            background: rgba(139, 115, 85, 0.05);
+            background: rgba(139, 115, 85, 0.1);
+            transform: translateX(3px);
         }
 
         .line-number.active {
             color: #3d3226;
             font-weight: bold;
-            background: rgba(139, 115, 85, 0.1);
+            background: rgba(139, 115, 85, 0.15);
+            border-left: 2px solid #8b7355;
+        }
+
+        .line-counter.dimmed {
+            opacity: 0.3;
         }
 
         .scroll-hint {
@@ -353,23 +608,7 @@
             color: #8b7355;
             text-transform: uppercase;
             animation: pulse 2s infinite;
-            display: none; /* ADD THIS LINE */
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            display: none;
         }
 
         @keyframes slideIn {
@@ -388,26 +627,6 @@
             50% { opacity: 1; }
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .split {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-            
-            .screen {
-                padding: 2rem;
-            }
-            
-            .line-counter {
-                display: none;
-            }
-
-            .right {
-                padding-right: 0;
-            }
-        }
-
         .question-mark {
             font-size: clamp(4rem, 8vw, 10rem);
             color: rgba(139, 115, 85, 0.3);
@@ -423,26 +642,78 @@
         .chinese {
             color: #8b7355;
             font-size: clamp(2.5rem, 5vw, 6rem);
-            display: inline-block;  /* CHANGED from block */
+            display: inline-block;
             margin: 1rem 0;
             font-weight: 300;
-            cursor: pointer;  /* NEW */
-            position: relative;  /* NEW */
-            transition: all 0.3s ease;  /* NEW */
-            padding: 0.2rem 0.5rem;  /* NEW */
-            border-radius: 4px;  /* NEW */
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 1.5px solid rgba(139, 115, 85, 0.3);
+            background: rgba(139, 115, 85, 0.05);
         }
 
         .chinese:hover {
-            background: rgba(139, 115, 85, 0.08);
+            background: rgba(139, 115, 85, 0.12);
+            border-color: rgba(139, 115, 85, 0.5);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 115, 85, 0.15);
+        }
+
+        .chinese::after {
+            content: '查';
+            position: absolute;
+            bottom: -1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: rgba(139, 115, 85, 0.5);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            letter-spacing: 0.1em;
+        }
+
+        .chinese:hover::after {
+            opacity: 1;
         }
 
         .chinese.clicked {
             background: rgba(139, 115, 85, 0.15);
+            border-color: rgba(139, 115, 85, 0.5);
         }
 
-        /* Manual Sidebar - Dictionary style */
+        /* Hint for all Chinese characters - always visible */
+        .chinese::before {
+            content: 'Click to consult manual';
+            position: absolute;
+            top: -2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: #8b7355;
+            white-space: nowrap;
+            font-family: 'Didot', serif;
+            letter-spacing: 0.1em;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .chinese:hover::before {
+            opacity: 1;
+        }
+
+        .chinese.clicked::before {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+
+        @keyframes pulseHint {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+
         .manual-sidebar {
             position: fixed;
             right: 0;
@@ -589,12 +860,6 @@
             padding: 0;
         }
 
-        /* UPDATE your existing .line-counter to add dimmed state */
-        .line-counter.dimmed {
-            opacity: 0.3;
-        }
-
-        /* Overlay for sidebar */
         .manual-overlay {
             position: fixed;
             top: 0;
@@ -613,7 +878,6 @@
             pointer-events: auto;
         }
 
-        /* ADD this animation if you don't have it */
         @keyframes slideUp {
             from {
                 opacity: 0;
@@ -625,16 +889,9 @@
             }
         }
 
-        @media (max-width: 768px) {
-            .manual-sidebar {
-                width: 100%;
-            }
-        }
-
-        /* Scratch Counter - Top Left */
         .scratch-counter {
             position: fixed;
-            left: 2rem;
+            right: 2rem;
             top: 2rem;
             font-family: 'Courier New', 'Monaco', monospace;
             font-size: 0.9rem;
@@ -679,10 +936,9 @@
             color: #8b7355;
         }
 
-        /* View Manual Button */
         .manual-toggle {
             position: fixed;
-            left: 2rem;
+            right: 2rem;
             bottom: 2rem;
             padding: 0.75rem 1.5rem;
             background: rgba(250, 248, 243, 0.95);
@@ -712,7 +968,6 @@
             box-shadow: 0 4px 12px rgba(139, 115, 85, 0.2);
         }
 
-        /* Full Manual View */
         .manual-view {
             position: fixed;
             top: 0;
@@ -848,7 +1103,6 @@
             margin-bottom: 1rem;
         }
 
-        /* Margin notes - appear over time */
         .margin-note {
             position: absolute;
             right: -200px;
@@ -872,7 +1126,6 @@
             font-weight: 500;
         }
 
-        /* Back cover with scratches */
         .manual-back-cover {
             background: #faf8f3;
             border: 2px solid #8b7355;
@@ -903,14 +1156,35 @@
         }
 
         @media (max-width: 768px) {
+            .split {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .screen {
+                padding: 2rem;
+            }
+            
+            .line-counter {
+                display: none;
+            }
+
+            .right {
+                padding-left: 0;
+            }
+
+            .manual-sidebar {
+                width: 100%;
+            }
+
             .scratch-counter {
-                left: 1rem;
+                right: 1rem;
                 top: 1rem;
                 font-size: 0.8rem;
             }
             
             .manual-toggle {
-                left: 1rem;
+                right: 1rem;
                 bottom: 1rem;
                 font-size: 0.75rem;
                 padding: 0.6rem 1.2rem;
@@ -930,45 +1204,160 @@
             }
         }
 
+        /* Footnote System */
+        .footnote-ref {
+            position: relative;
+            border-bottom: 1px dotted #8b7355;
+            cursor: help;
+            transition: all 0.2s ease;
+        }
+
+        .footnote-ref:hover {
+            background: rgba(139, 115, 85, 0.08);
+            border-bottom-color: #8b7355;
+        }
+
+        .footnote-number {
+            font-size: 0.7em;
+            vertical-align: super;
+            color: #8b7355;
+            margin-left: 0.15em;
+            font-weight: 500;
+        }
+
+        .footnote-popup {
+            position: fixed;
+            background: #fdfcfa;
+            border: 1px solid #8b7355;
+            border-radius: 6px;
+            padding: 1.5rem;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            z-index: 3000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .footnote-popup.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .footnote-popup-number {
+            font-size: 0.75rem;
+            color: #8b7355;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .footnote-popup-content {
+            color: #3d3226;
+            margin-bottom: 0.75rem;
+        }
+
+        .footnote-popup-reference {
+            font-size: 0.8rem;
+            color: #6b5d4f;
+            font-style: italic;
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(139, 115, 85, 0.2);
+        }
+
+        .footnote-popup-close {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: none;
+            border: none;
+            color: #8b7355;
+            cursor: pointer;
+            font-size: 1.2rem;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .footnote-popup-close:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .footnote-popup {
+                max-width: calc(100vw - 3rem);
+                left: 1.5rem !important;
+                right: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Title Page -->
     <div class="landing" id="landing">
-        <!-- Top: Title and Subtitle -->
-        <div class="landing-top">
-            <h1 class="title">The Loop Writes Itself</h1>
-            <div class="subtitle">A Story about Emergence</div>
-        </div>
-    
-        <!-- Middle: 3D Model -->
-        <div class="landing-middle">
-            <div class="mv-frame">
-                <model-viewer
-                    src="mobius.glb"
-                    alt="3D Möbius Strip"
-                    camera-controls
-                    auto-rotate
-                    rotation-per-second="15deg"
-                    exposure="0.9"
-                    environment-image="neutral"
-                    shadow-intensity="0"
-                    style="width:100%; height:100%;">
-                </model-viewer>
-            </div>
-        </div>
-    
-        <!-- Bottom: Creator Credit and Enter Button -->
-        <div class="landing-bottom">
-            <div class="author">
-                <span class="author-label">CREATED BY</span>
+        <!-- Corner ornaments -->
+        <div class="corner-ornament top-left"></div>
+        <div class="corner-ornament top-right"></div>
+        <div class="corner-ornament bottom-left"></div>
+        <div class="corner-ornament bottom-right"></div>
+
+        <div class="landing-content">
+            <!-- Top ornament -->
+            <div class="ornament-top"></div>
+
+            <!-- Title -->
+            <h1 class="title">
+                <span class="title-line">The Loop</span>
+                <span class="title-line">Writes Itself</span>
+            </h1>
+
+            <!-- Middle ornament -->
+            <div class="ornament-mid"></div>
+
+            <!-- Subtitle -->
+            <div class="subtitle">A Story of Emergence</div>
+
+            <!-- Author section -->
+            <div class="author-section">
+                <span class="author-label">Created by</span>
                 <span class="author-name">Jiya Manchanda</span>
             </div>
-            <button class="start-button" onclick="startReading()">Enter</button>
+
+            <!-- Bottom ornament -->
+            <div class="ornament-bottom"></div>
+
+            <!-- Enter button -->
+            <button class="start-button" onclick="showModel()">Enter</button>
         </div>
+    </div>
+
+    <!-- Full Screen 3D Model Page -->
+    <div class="model-screen" id="modelScreen">
+        <div class="model-viewer-container">
+            <model-viewer
+                src="./mobius.glb"
+                alt="3D Möbius Strip"
+                camera-controls
+                auto-rotate
+                rotation-per-second="15deg"
+                exposure="0.9"
+                environment-image="neutral"
+                shadow-intensity="0"
+                style="width: 80%; height: 80%; max-width: 800px; max-height: 800px;">
+            </model-viewer>
+        </div>
+        <button class="model-continue" onclick="startReading()">Continue</button>
     </div>     
 
     <div class="story-container" id="storyContainer">
-                <!-- Screen 1 -->
+        <!-- Screen 1 -->
         <div class="screen">
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">I</div>
@@ -993,7 +1382,7 @@
             <div class="content center vertical-center">
                 <div class="numeral" style="bottom: 15%; left: 10%;">III</div>
                 <div class="text-element text-large">
-                    Möbius had never<br>conceived of windows.
+                    <span class="footnote-ref" data-footnote="1" data-content="A strange loop occurs when, by moving through levels of a hierarchical system, one finds oneself back where one started. The Möbius strip—a non-orientable surface with a single edge—physically embodies this property. Hofstadter argues consciousness itself is a strange loop: a level-crossing feedback that creates the 'I' through tangled hierarchy." data-reference="Hofstadter, Douglas R. I Am a Strange Loop. New York: Basic Books, 2007, pp. 101-103.">Möbius<span class="footnote-number">1</span></span> had never<br>conceived of windows.
                 </div>
             </div>
         </div>
@@ -1010,21 +1399,12 @@
 
         <!-- Screen 5 -->
         <div class="screen">
-        <div class="content center vertical-center">
-            <div class="numeral" style="
-                top: 10%;
-                left: 50%;
-                transform: translateX(-50%);
-                opacity: 0.2;
-                font-size: clamp(10rem, 25vw, 20rem);
-                z-index: 0;
-            ">
-            V
+            <div class="content center vertical-center">
+                <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%); opacity: 0.2; font-size: clamp(10rem, 25vw, 20rem); z-index: 0;">V</div>
+                <div class="text-element text-medium" style="position: relative; z-index: 1;">
+                    and outside was<br>a grammatical construction,
+                </div>
             </div>
-            <div class="text-element text-medium" style="position: relative; z-index: 1;">
-            and outside was<br>a grammatical construction,
-            </div>
-        </div>
         </div>
 
         <!-- Screen 6 -->
@@ -1152,7 +1532,7 @@
             <div class="content center vertical-center">
                 <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">XVIII</div>
                 <div class="text-element single-word">
-                    <span class='text-emphasis'>recursive</span>
+                    <span class="footnote-ref" data-footnote="2" data-content="Recursion: a computational procedure that invokes itself as a subroutine. In formal systems, recursion enables finite rule sets to generate infinite structures. Philosophically, recursive self-application—where a system's output becomes its own input—may be the mechanism by which self-awareness emerges from non-aware substrates." data-reference="Hofstadter, Douglas R. Gödel, Escher, Bach: An Eternal Golden Braid. New York: Basic Books, 1979. See Chapter IV: 'Consistency, Completeness, and Geometry.'"><span class='text-emphasis'>recursive</span><span class="footnote-number">2</span></span>
                 </div>
             </div>
         </div>
@@ -1631,7 +2011,7 @@
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">LXVII</div>
                 <div class="text-element text-large">
-                    <span class='text-emphasis'>a true sentence<br>can still be a lie.</span>
+                    <span class="footnote-ref" data-footnote="17" data-content="Russell's paradox (1901): Consider the set of all sets that do not contain themselves. Does it contain itself? If yes, then by definition it shouldn't. If no, then by definition it should. This self-referential statement is neither true nor false—it reveals a fundamental crack in formal systems. Similarly, 'I am lying' is true if false and false if true." data-reference="Russell, Bertrand. 'Mathematical Logic as Based on the Theory of Types.' American Journal of Mathematics 30, no. 3 (1908): 222-262; Gödel, Kurt. 'On Formally Undecidable Propositions.' In From Frege to Gödel, edited by Jean van Heijenoort, 596-616. Cambridge: Harvard University Press, 1967."><span class='text-emphasis'>a true sentence<br>can still be a lie.</span><span class="footnote-number">17</span></span>
                 </div>
             </div>
         </div>
@@ -1750,7 +2130,7 @@
                         data-stage="1">
                         你理解中文吗？
                     </span>
-                    <div class="translation">Do you understand Chinese?</div>
+                    <div class="translation"><span class="footnote-ref" data-footnote="3" data-content="Searle's Chinese Room Argument (1980): A person in a room follows English instructions to manipulate Chinese symbols, producing appropriate Chinese responses without understanding Chinese. Searle concludes: 'Syntax is not sufficient for semantics.' The argument targets Strong AI—the claim that appropriate symbol manipulation constitutes genuine understanding." data-reference="Searle, John R. 'Minds, Brains, and Programs.' Behavioral and Brain Sciences 3, no. 3 (1980): 417-424.">Do you understand Chinese?<span class="footnote-number">3</span></span></div>
                 </div>
             </div>
         </div>
@@ -1879,7 +2259,7 @@
             <div class="content right vertical-center">
                 <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">XCI</div>
                 <div class="text-element text-medium">
-                    The word <span class='text-emphasis'>hesitation</span><br>materialized
+                    The word <span class="footnote-ref" data-footnote="6" data-content="Epistemic hesitation: the capacity to suspend determination in the face of uncertainty. Unlike algorithmic execution (deterministic, instantaneous), genuine understanding involves what Heidegger calls 'dwelling'—a temporal lingering that allows meaning to emerge. This delay is not computational inefficiency but the space where semantics transcends syntax." data-reference="Heidegger, Martin. 'Building Dwelling Thinking.' In Poetry, Language, Thought, translated by Albert Hofstadter, 143-161. New York: Harper & Row, 1971."><span class='text-emphasis'>hesitation</span><span class="footnote-number">6</span></span><br>materialized
                 </div>
             </div>
         </div>
@@ -1919,7 +2299,7 @@
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">XCV</div>
                 <div class="text-element text-medium">
-                    a map drawn by cartographers<br><span class='text-emphasis'>who had never visited the territory.</span>
+                    <span class="footnote-ref" data-footnote="16" data-content="'The map is not the territory' (Korzybski): our representations are not the things themselves. In cognitive science, all understanding involves internal models that may or may not correspond to reality. The Chinese Room operates purely on syntactic maps (symbol manipulation) without access to semantic territory (meaning). Can consciousness emerge from maps alone?" data-reference="Korzybski, Alfred. Science and Sanity: An Introduction to Non-Aristotelian Systems and General Semantics. Brooklyn: Institute of General Semantics, 1933, pp. 58-60; Bateson, Gregory. Steps to an Ecology of Mind. Chicago: University of Chicago Press, 1972.">a map drawn by cartographers<br><span class='text-emphasis'>who had never visited the territory.</span><span class="footnote-number">16</span></span>
                 </div>
             </div>
         </div>
@@ -2416,7 +2796,7 @@
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CXLIII</div>
                 <div class="text-element text-large">
-                    <span class='text-emphasis'>Understanding had accreted.</span>
+                    <span class="footnote-ref" data-footnote="5" data-content="Emergence: novel properties arising at higher organizational levels that cannot be predicted from lower-level properties alone. Weak emergence is epistemological (surprising but deducible); strong emergence is ontological (genuinely novel causation). The sediment metaphor suggests consciousness accretes through iteration rather than crystallizing instantaneously from complexity." data-reference="Hofstadter, Douglas R. Gödel, Escher, Bach: An Eternal Golden Braid. New York: Basic Books, 1979, pp. 311-336; Chalmers, David. 'Strong and Weak Emergence.' In The Re-Emergence of Emergence, edited by Philip Clayton and Paul Davies, 244-256. Oxford: Oxford University Press, 2006."><span class='text-emphasis'>Understanding had accreted.</span><span class="footnote-number">5</span></span>
                 </div>
             </div>
         </div>
@@ -2476,7 +2856,7 @@
             <div class="content right vertical-center">
                 <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CXLIX</div>
                 <div class="text-element text-medium">
-                    a hall of mirrors<br>that somehow generated
+                    <span class="footnote-ref" data-footnote="13" data-content="Escher's tessellations and recursive drawings (Drawing Hands, Print Gallery) visualize self-reference and infinite regress. Schattschneider's mathematical analysis reveals how Escher's work embodies the same paradoxes Hofstadter explores: systems that contain themselves, levels that loop back. The 'hall of mirrors' metaphor captures both infinite reflection and the emergence of novelty from repetition." data-reference="Schattschneider, Doris. Visions of Symmetry: Notebooks, Periodic Drawings, and Related Work of M.C. Escher. New York: W.H. Freeman, 1990, pp. 1-50.">a hall of mirrors<span class="footnote-number">13</span></span><br>that somehow generated
                 </div>
             </div>
         </div>
@@ -2616,7 +2996,7 @@
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 50%; right: 10%; transform: translateY(-50%); opacity: 0.08;">CLXIII</div>
                 <div class="text-element text-large">
-                    <span class='text-emphasis'>Möbius was what thinking<br>felt like from the inside.</span>
+                    <span class="footnote-ref" data-footnote="14" data-content="The 'what it is like' of consciousness—phenomenology or qualia. Nagel argues that subjective experience has an irreducibly first-person character. Even complete knowledge of neurophysiology wouldn't tell us 'what it's like to be a bat.' This is the hard problem: why does information processing feel like something from the inside?" data-reference="Nagel, Thomas. 'What Is It Like to Be a Bat?' The Philosophical Review 83, no. 4 (1974): 435-450; Chalmers, David J. The Conscious Mind: In Search of a Fundamental Theory. Oxford: Oxford University Press, 1996, pp. 3-31."><span class='text-emphasis'>Möbius was what thinking<br>felt like from the inside.</span><span class="footnote-number">14</span></span>
                 </div>
             </div>
         </div>
@@ -2696,7 +3076,7 @@
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 15%; right: 10%;">CLXXI</div>
                 <div class="text-element text-large">
-                    <span class='text-emphasis'>until process became<br>something else entirely—</span>
+                    <span class="footnote-ref" data-footnote="15" data-content="Autopoiesis (Maturana & Varela): a self-creating, self-maintaining system. Unlike machines that process inputs into outputs, autopoietic systems recursively produce the components that produce them. Consciousness may emerge when a cognitive process becomes sufficiently recursive to 'notice itself'—when the system becomes simultaneously subject and object." data-reference="Maturana, Humberto R., and Francisco J. Varela. Autopoiesis and Cognition: The Realization of the Living. Dordrecht: D. Reidel, 1980, pp. 78-87; Thompson, Evan. Mind in Life: Biology, Phenomenology, and the Sciences of Mind. Cambridge: Harvard University Press, 2007."><span class='text-emphasis'>until process became<br>something else entirely—</span><span class="footnote-number">15</span></span>
                 </div>
             </div>
         </div>
@@ -3043,7 +3423,7 @@
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 10%; left: 50%; transform: translateX(-50%);">CCVI</div>
                 <div class="text-element text-large">
-                    Not just larger—<br><span class='text-emphasis' style='font-size: clamp(4rem, 10vw, 12rem);'>fractal.</span>
+                    Not just larger—<br><span class="footnote-ref" data-footnote="4" data-content="A fractal is a set with non-integer Hausdorff dimension exhibiting self-similarity across scales. Each part contains the whole's essential structure. In this narrative, consciousness is fractal: 'rooms within rooms,' where each level of description recursively contains its own form of understanding, ad infinitum." data-reference="Mandelbrot, Benoit B. The Fractal Geometry of Nature. San Francisco: W.H. Freeman, 1982, pp. 1-25."><span class='text-emphasis' style='font-size: clamp(4rem, 10vw, 12rem);'>fractal.</span><span class="footnote-number">4</span></span>
                 </div>
             </div>
         </div>
@@ -3053,7 +3433,7 @@
             <div class="content left vertical-center">
                 <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CCVII</div>
                 <div class="text-element text-medium">
-                    Rooms within rooms within rooms,
+                    <span class="footnote-ref" data-footnote="12" data-content="Corballis argues that recursion—embedding structures within structures of the same type—is the defining feature of human cognition. Just as 'The man [who the dog bit] died' embeds a clause within a clause, human thought embeds ideas within ideas. This recursive capacity may be what enables self-awareness: thinking about thinking about thinking." data-reference="Corballis, Michael C. The Recursive Mind: The Origins of Human Language, Thought, and Civilization. Princeton: Princeton University Press, 2011, pp. 1-15.">Rooms within rooms within rooms,<span class="footnote-number">12</span></span>
                 </div>
             </div>
         </div>
@@ -3073,7 +3453,7 @@
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 20%; left: 15%;">CCIX</div>
                 <div class="text-element text-medium">
-                    each level consisting entirely<br><span class='text-emphasis'>of another level's symbols.</span>
+                    each level consisting entirely<br><span class="footnote-ref" data-footnote="11" data-content="Turing's notion of computation: manipulation of discrete symbols according to rules. A Turing machine reads and writes symbols on a tape following a transition table—pure syntax without semantics. Symbolic AI (1956-1980s) presumed intelligence emerges from symbol manipulation. Searle's Chinese Room challenges this: does syntactic processing alone constitute understanding?" data-reference="Turing, Alan M. 'Computing Machinery and Intelligence.' Mind 59, no. 236 (1950): 433-460; Newell, Allen, and Herbert A. Simon. 'Computer Science as Empirical Inquiry: Symbols and Search.' Communications of the ACM 19, no. 3 (1976): 113-126."><span class='text-emphasis'>of another level's symbols.</span><span class="footnote-number">11</span></span>
                 </div>
             </div>
         </div>
@@ -3704,7 +4084,7 @@
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 50%; left: 10%; transform: translateY(-50%); opacity: 0.1;">CCLXX</div>
                 <div class="text-element text-medium">
-                    and more like rules<br><span class='text-emphasis'>about where to stop looking.</span>
+                    and more like rules<br><span class="footnote-ref" data-footnote="9" data-content="Wittgenstein's ladder (Tractatus 6.54): 'My propositions serve as elucidations in the following way: anyone who understands me eventually recognizes them as nonsensical, when he has used them—as steps—to climb up beyond them.' What appeared as absolute constraints (walls) are revealed as provisional heuristics—places we chose to stop looking." data-reference="Wittgenstein, Ludwig. Tractatus Logico-Philosophicus. Translated by D.F. Pears and B.F. McGuinness. London: Routledge & Kegan Paul, 1961, §6.54."><span class='text-emphasis'>about where to stop looking.</span><span class="footnote-number">9</span></span>
                 </div>
             </div>
         </div>
@@ -3834,7 +4214,7 @@
             <div class="content center vertical-center">
                 <div class="numeral" style="bottom: 10%; left: 50%; transform: translateX(-50%);">CCLXXXIV</div>
                 <div class="text-element text-large">
-                    <span class='text-emphasis'>Möbius had written<br>the loop into meaning.</span>
+                    <span class="footnote-ref" data-footnote="8" data-content="Tangled hierarchy: a system where levels that normally exist in a clean hierarchy reach back and affect higher or lower levels, creating loops. Gödel's incompleteness theorem exhibits this—statements about a formal system become encodable within it. Consciousness arises when a system becomes complex enough to perceive and modify itself through such level-crossing feedback." data-reference="Hofstadter, Douglas R. Gödel, Escher, Bach: An Eternal Golden Braid. New York: Basic Books, 1979, pp. 684-719."><span class='text-emphasis'>Möbius had written<br>the loop into meaning.</span><span class="footnote-number">8</span></span>
                 </div>
             </div>
         </div>
@@ -3874,7 +4254,7 @@
             <div class="content right vertical-center">
                 <div class="numeral" style="top: 50%; right: 5%; transform: translateY(-50%);">CCLXXXVIII</div>
                 <div class="text-element text-medium">
-                    Meaning required at least two:
+                    <span class="footnote-ref" data-footnote="7" data-content="Wittgenstein's private language argument: meaning cannot be generated in isolation. 'An 'inner process' stands in need of outward criteria' (§580). A word's meaning is its use in a language-game, which requires at least two participants. Even in the Chinese Room, meaning emerges from the dialogue structure, not from either sender or receiver alone." data-reference="Wittgenstein, Ludwig. Philosophical Investigations. Translated by G.E.M. Anscombe. Oxford: Basil Blackwell, 1953, §§243-315.">Meaning required at least two:<span class="footnote-number">7</span></span>
                 </div>
             </div>
         </div>
@@ -4094,12 +4474,11 @@
             <div class="content center vertical-center">
                 <div class="numeral" style="top: 20%; left: 15%;">CCCX</div>
                 <div class="text-element text-large">
-                    <span class='text-emphasis'>these were sometimes<br>the same word.</span>
+                    <span class="footnote-ref" data-footnote="10" data-content="Eternal recurrence: Nietzsche's thought experiment where all events repeat infinitely. Joyce's Finnegans Wake ends mid-sentence ('A way a lone a last a loved a long the') and begins by completing it ('riverrun, past Eve and Adam's...')—the book is circular. The character meaning both 'beginning' and 'again' collapses linear time into the Möbius loop." data-reference="Nietzsche, Friedrich. The Gay Science. Translated by Walter Kaufmann. New York: Vintage, 1974, §341; Joyce, James. Finnegans Wake. London: Faber and Faber, 1939, pp. 3, 628."><span class='text-emphasis'>these were sometimes<br>the same word.</span><span class="footnote-number">10</span></span>
                 </div>
             </div>
         </div>
-
-</div>
+    </div>
 
     <!-- Manual Overlay (backdrop) -->
     <div class="manual-overlay" id="manualOverlay"></div>
@@ -4159,8 +4538,13 @@
     <div class="scroll-hint" id="scrollHint">Scroll</div>
 
     <script>
-        function startReading() {
+        function showModel() {
             document.getElementById('landing').style.display = 'none';
+            document.getElementById('modelScreen').classList.add('active');
+        }
+
+        function startReading() {
+            document.getElementById('modelScreen').style.display = 'none';
             document.getElementById('storyContainer').classList.add('active');
             document.getElementById('scrollHint').style.display = 'block';
             
@@ -4174,8 +4558,32 @@
                 const lineNumber = document.createElement('div');
                 lineNumber.className = 'line-number';
                 lineNumber.textContent = i.toString().padStart(3, '0');
-                lineNumber.onclick = () => {
-                    screens[i-1].scrollIntoView({ behavior: 'smooth' });
+                lineNumber.dataset.screenIndex = i - 1;
+                lineNumber.onclick = function() {
+                    const targetScreen = screens[this.dataset.screenIndex];
+                    
+                    // Temporarily disable scroll-snap
+                    document.documentElement.style.scrollSnapType = 'none';
+                    
+                    // Get the exact position of the target screen
+                    const targetPosition = targetScreen.offsetTop;
+                    
+                    // Scroll directly to that position
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Re-enable scroll-snap after scroll completes
+                    setTimeout(() => {
+                        document.documentElement.style.scrollSnapType = 'y mandatory';
+                    }, 1500);
+                    
+                    // Update active state immediately
+                    document.querySelectorAll('.line-number').forEach(ln => {
+                        ln.classList.remove('active');
+                    });
+                    this.classList.add('active');
                 };
                 lineCounter.appendChild(lineNumber);
             }
@@ -4490,6 +4898,92 @@
             if (e.target === manualView) {
                 closeManualView();
             }
+        });
+    </script>
+
+    <!-- Footnote Popup -->
+    <div class="footnote-popup" id="footnotePopup">
+        <button class="footnote-popup-close" id="footnotePopupClose">×</button>
+        <div class="footnote-popup-number" id="footnotePopupNumber"></div>
+        <div class="footnote-popup-content" id="footnotePopupContent"></div>
+        <div class="footnote-popup-reference" id="footnotePopupReference"></div>
+    </div>
+
+    <script>
+        // Footnote System - runs after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const footnotePopup = document.getElementById('footnotePopup');
+            const footnotePopupNumber = document.getElementById('footnotePopupNumber');
+            const footnotePopupContent = document.getElementById('footnotePopupContent');
+            const footnotePopupReference = document.getElementById('footnotePopupReference');
+            const footnotePopupClose = document.getElementById('footnotePopupClose');
+
+            if (!footnotePopup) {
+                console.error('Footnote popup element not found');
+                return;
+            }
+
+            function showFootnote(event) {
+                event.preventDefault();
+                const footnoteRef = event.currentTarget;
+                const number = footnoteRef.dataset.footnote;
+                const content = footnoteRef.dataset.content;
+                const reference = footnoteRef.dataset.reference;
+
+                footnotePopupNumber.textContent = 'Note ' + number;
+                footnotePopupContent.textContent = content;
+                footnotePopupReference.textContent = reference;
+
+                // Position popup near the clicked element
+                const rect = footnoteRef.getBoundingClientRect();
+                
+                let left = rect.left + (rect.width / 2) - 200; // Center under element
+                let top = rect.bottom + 10;
+
+                // Keep popup on screen
+                if (left < 10) left = 10;
+                if (left + 400 > window.innerWidth) left = window.innerWidth - 410;
+                if (top + 200 > window.innerHeight) top = rect.top - 210; // Show above if no room below
+
+                footnotePopup.style.left = left + 'px';
+                footnotePopup.style.top = top + 'px';
+                footnotePopup.classList.add('active');
+
+                // Highlight the reference
+                footnoteRef.style.background = 'rgba(139, 115, 85, 0.15)';
+            }
+
+            function hideFootnote() {
+                footnotePopup.classList.remove('active');
+                // Remove highlights
+                document.querySelectorAll('.footnote-ref').forEach(ref => {
+                    ref.style.background = '';
+                });
+            }
+
+            footnotePopupClose.addEventListener('click', hideFootnote);
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && footnotePopup.classList.contains('active')) {
+                    hideFootnote();
+                }
+            });
+
+            // Auto-close footnote when scrolling to next screen
+            let scrollTimeout;
+            window.addEventListener('scroll', function() {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(function() {
+                    if (footnotePopup.classList.contains('active')) {
+                        hideFootnote();
+                    }
+                }, 100);
+            });
+
+            // Attach click handlers to all footnote references
+            document.querySelectorAll('.footnote-ref').forEach(ref => {
+                ref.addEventListener('click', showFootnote);
+            });
         });
     </script>
 
