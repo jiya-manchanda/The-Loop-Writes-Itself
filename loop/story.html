@@ -4666,29 +4666,39 @@
     <div class="scroll-hint" id="scrollHint">Scroll</div>
 
     <script>
+        // Smooth scroll to model page
         function scrollToModel() {
             const modelScreen = document.getElementById('modelScreen');
-            modelScreen.scrollIntoView({ behavior: 'smooth' });
+            modelScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        
+    
+        // Smooth scroll to first story screen and initialize
         function startReading() {
-            document.getElementById('scrollHint').style.display = 'block';
             const firstStoryScreen = document.querySelector('.story-container .screen');
             if (firstStoryScreen) {
-                firstStoryScreen.scrollIntoView({ behavior: 'smooth' });
+                firstStoryScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
             
             // Show line counter when entering story
             const lineCounter = document.getElementById('lineCounter');
             if (lineCounter) {
-                lineCounter.classList.add('visible');
-            }            
-            // Initialize screen visibility
+                setTimeout(() => {
+                    lineCounter.classList.add('visible');
+                }, 500);
+            }
+            
+            // Initialize if not already done
+            if (!document.querySelector('.line-number')) {
+                initializeStory();
+            }
+        }
+        
+        // Initialize story elements
+        function initializeStory() {
             const screens = document.querySelectorAll('.screen');
-            screens[0].classList.add('visible');
+            const lineCounter = document.getElementById('lineCounter');
             
             // Generate line numbers
-            const lineCounter = document.getElementById('lineCounter');
             for (let i = 1; i <= screens.length; i++) {
                 const lineNumber = document.createElement('div');
                 lineNumber.className = 'line-number';
@@ -4700,14 +4710,8 @@
                     // Temporarily disable scroll-snap
                     document.documentElement.style.scrollSnapType = 'none';
                     
-                    // Get the exact position of the target screen
-                    const targetPosition = targetScreen.offsetTop;
-                    
-                    // Scroll directly to that position
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
-                    });
+                    // Scroll to target
+                    targetScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     
                     // Re-enable scroll-snap after scroll completes
                     setTimeout(() => {
@@ -4723,13 +4727,18 @@
                 lineCounter.appendChild(lineNumber);
             }
             
+            // Initialize first screen as visible
+            if (screens.length > 0) {
+                screens[0].classList.add('visible');
+            }
+            
             updateLineCounter();
         }
     
         function updateLineCounter() {
             const screens = document.querySelectorAll('.screen');
             const lineNumbers = document.querySelectorAll('.line-number');
-            const lineCounter = document.getElementById('lineCounter');
+            const scrollHint = document.getElementById('scrollHint');
             
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
@@ -4751,8 +4760,8 @@
                         }
                         
                         // Hide scroll hint after first scroll
-                        if (index > 0) {
-                            document.getElementById('scrollHint').style.display = 'none';
+                        if (index > 0 && scrollHint) {
+                            scrollHint.style.display = 'none';
                         }
                     }
                 });
