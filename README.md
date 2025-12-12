@@ -135,26 +135,29 @@ Each dimension undergoes its own metamorphosis, contributing to a unified logic 
 ---
 
 ## Repository Contents
-
+```
 /src
-mask_extraction.py
-shape_interpolation.py
-diffusion_pipeline.py
-training/
-synthetic_data/
-escher_transitions/
-utils/
-geometry.py
-symmetry_ops.py
+├── mask_extraction.py
+├── shape_interpolation.py
+├── diffusion_pipeline.py
+├── training/
+├── synthetic_data/
+├── escher_transitions/
+├── utils/
+├── geometry.py
+└── symmetry_ops.py
+
 /assets
-start_shapes/
-end_shapes/
-intermediate_frames/
-3d_model/
-story_text/
+├── start_shapes/
+├── end_shapes/
+├── intermediate_frames/
+├── 3d_model/
+└── story_text/
+
 /docs
-conceptual_overview.pdf
-process_notes/
+├── conceptual_overview.pdf
+└── process_notes/
+```
 
 ---
 
@@ -163,29 +166,40 @@ process_notes/
 ### 1. Generate Intermediate Shapes
 ```bash
 python src/shape_interpolation.py --start path/to/start.png --end path/to/end.png --out out_dir/
-
-python src/diffusion_pipeline.py --masks out_dir/ --model my_model.ckpt
+```
 
 ### 2. Produce Escher-style Frames
 ```bash
 python src/diffusion_pipeline.py --masks out_dir/ --model my_model.ckpt
+```
 
 ### 3. Train Your Own Model
 ```bash
 python src/training/train.py --data synthetic_data/ --epochs 50
+```
+
+---
 
 ## Outputs
-- Clean masks  
-- Geometric interpolation sequences  
-- Diffusion-rendered Escher transitions  
-- Texture sequences for 3D model integration  
+
+* Clean masks
+* Geometric interpolation sequences
+* Diffusion-rendered Escher transitions
+* Texture sequences for 3D model integration
+
+---
 
 ## License
+
 **Creative Commons CC BY-NC-SA 4.0**  
 Share and adapt non-commercially with attribution and identical licensing.
 
+---
+
 ## Closing Note
+
 This project is a loop across narrative, visual, mathematical, and computational dimensions.  
 Each component generates the others, dissolves into the others, and returns transformed.  
+
 The loop writes itself.  
 All that remained was to listen.
