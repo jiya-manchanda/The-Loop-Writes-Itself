@@ -355,33 +355,91 @@
             }
         }
 
-        /* Full Screen Model Page */
+        /* Model Screen - Now scrollable with split layout */
         .model-screen {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
             height: 100vh;
+            width: 100%;
             background: #f5f1e8;
-            z-index: 9999;
-        }
-
-        .model-screen.active {
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
         }
-
+        
+        .model-content-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem 6rem 2rem;
+            gap: 4rem;
+        }
+        
         .model-viewer-container {
-            width: 100%;
-            height: 100%;
+            flex: 1;
+            max-width: 600px;
+            height: 600px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-
+        
+        .model-info-container {
+            flex: 1;
+            max-width: 500px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .model-info-content {
+            width: 100%;
+            padding: 2rem;
+        }
+        
+        .model-info-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            color: #2a2318;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .model-info-text {
+            font-size: clamp(0.95rem, 1.8vw, 1.1rem);
+            line-height: 1.8;
+            color: #3d3226;
+            margin-bottom: 1.5rem;
+            text-align: justify;
+        }
+        
+        .model-info-link {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .github-link {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            font-size: 0.85rem;
+            background: transparent;
+            border: 1.5px solid #8b7355;
+            color: #8b7355;
+            text-decoration: none;
+            letter-spacing: 0.2em;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-family: 'Didot', serif;
+        }
+        
+        .github-link:hover {
+            background: #8b7355;
+            color: #f5f1e8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 115, 85, 0.2);
+        }
+        
         .model-continue {
             position: absolute;
             bottom: 4rem;
@@ -400,22 +458,50 @@
             font-weight: 400;
             backdrop-filter: blur(10px);
         }
-
+        
         .model-continue:hover {
             background: #8b7355;
             color: #f5f1e8;
             transform: translateX(-50%) translateY(-2px);
             box-shadow: 0 4px 12px rgba(139, 115, 85, 0.2);
         }
+        
+        @media (max-width: 1024px) {
+            .model-content-wrapper {
+                flex-direction: column;
+                padding: 3rem 2rem 8rem 2rem;
+                gap: 2rem;
+            }
+        
+            .model-viewer-container {
+                height: 400px;
+            }
+        
+            .model-info-container {
+                max-width: 600px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .model-viewer-container {
+                height: 300px;
+            }
+        
+            .model-info-content {
+                padding: 1rem;
+            }
+        
+            .model-continue {
+                bottom: 2rem;
+                padding: 0.9rem 2.5rem;
+                font-size: 0.75rem;
+            }
+        }
 
         .story-container {
-            display: none;
-        }
-
-        .story-container.active {
             display: block;
         }
-
+        
         .screen {
             height: 100vh;
             display: flex;
@@ -564,6 +650,14 @@
             max-height: calc(100vh - 4rem);
             scrollbar-width: none;
             -ms-overflow-style: none;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .line-counter.visible {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .line-counter::-webkit-scrollbar {
@@ -1334,27 +1428,61 @@
             <div class="ornament-bottom"></div>
 
             <!-- Enter button -->
-            <button class="start-button" onclick="showModel()">Enter</button>
+            <button class="start-button" onclick="scrollToModel()">Enter</button>
         </div>
     </div>
 
-    <!-- Full Screen 3D Model Page -->
+    <!-- 3D Model Page with Context -->
     <div class="model-screen" id="modelScreen">
-        <div class="model-viewer-container">
-            <model-viewer
-                src="./mobius.glb"
-                alt="3D Möbius Strip"
-                camera-controls
-                auto-rotate
-                rotation-per-second="15deg"
-                exposure="0.9"
-                environment-image="neutral"
-                shadow-intensity="0"
-                style="width: 80%; height: 80%; max-width: 800px; max-height: 800px;">
-            </model-viewer>
+        <div class="model-content-wrapper">
+            <div class="model-viewer-container">
+                <model-viewer
+                    src="./mobius.glb"
+                    alt="3D Möbius Strip"
+                    camera-controls
+                    auto-rotate
+                    rotation-per-second="15deg"
+                    exposure="0.9"
+                    environment-image="neutral"
+                    shadow-intensity="0"
+                    style="width: 100%; height: 100%;">
+                </model-viewer>
+            </div>
+            <div class="model-info-container">
+                <div class="model-info-content">
+                    <div class="ornament-top"></div>
+                    
+                    <h2 class="model-info-title">The Möbius Strip</h2>
+                    
+                    <div class="ornament-mid"></div>
+                    
+                    <p class="model-info-text">
+                        A mathematical art piece exploring the strange loop of consciousness. 
+                        This non-orientable surface—with only one side and one edge—serves as 
+                        the central metaphor for self-referential awareness.
+                    </p>
+                    
+                    <p class="model-info-text">
+                        <em>Please wait a moment while the model loads. Once loaded, you can 
+                        click and drag to rotate, scroll to zoom, and examine the continuous 
+                        surface that has no beginning or end.</em>
+                    </p>
+                    
+                    <div class="model-info-link">
+                        <a href="https://github.com/jiya-manchanda/The-Loop-Writes-Itself" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           class="github-link">
+                            Learn More on GitHub →
+                        </a>
+                    </div>
+                    
+                    <div class="ornament-bottom"></div>
+                </div>
+            </div>
         </div>
-        <button class="model-continue" onclick="startReading()">Continue</button>
-    </div>     
+        <button class="model-continue" onclick="startReading()">Continue to Story</button>
+    </div>
 
     <div class="story-container" id="storyContainer">
         <!-- Screen 1 -->
@@ -4538,16 +4666,23 @@
     <div class="scroll-hint" id="scrollHint">Scroll</div>
 
     <script>
-        function showModel() {
-            document.getElementById('landing').style.display = 'none';
-            document.getElementById('modelScreen').classList.add('active');
+        function scrollToModel() {
+            const modelScreen = document.getElementById('modelScreen');
+            modelScreen.scrollIntoView({ behavior: 'smooth' });
         }
-
+        
         function startReading() {
-            document.getElementById('modelScreen').style.display = 'none';
-            document.getElementById('storyContainer').classList.add('active');
             document.getElementById('scrollHint').style.display = 'block';
+            const firstStoryScreen = document.querySelector('.story-container .screen');
+            if (firstStoryScreen) {
+                firstStoryScreen.scrollIntoView({ behavior: 'smooth' });
+            }
             
+            // Show line counter when entering story
+            const lineCounter = document.getElementById('lineCounter');
+            if (lineCounter) {
+                lineCounter.classList.add('visible');
+            }            
             // Initialize screen visibility
             const screens = document.querySelectorAll('.screen');
             screens[0].classList.add('visible');
